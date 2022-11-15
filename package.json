@@ -1,0 +1,70 @@
+{
+  "name": "panamah-sdk",
+  "version": "1.0.0",
+  "description": "Nodejs implementation of panamah standard developer kit",
+  "main": "lib/cjs/index.js",
+  "module": "lib/esm/index.js",
+  "files": [
+    "lib/**/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quickdata-team/panamah-sdk-nodejs-v2.git"
+  },
+  "homepage": "https://github.com/quickdata-team/panamah-sdk-nodejs-v2#readme",
+  "bugs": {
+    "url": "https://github.com/quickdata-team/panamah-sdk-nodejs-v2/issues"
+  },
+  "author": {
+    "email": "tecnologia@quickdata.com.br",
+    "name": "Quickdata S/A",
+    "url": "https://quickdata.com.br"
+  },
+  "license": "ISC",
+  "engines": {
+    "node": ">=12"
+  },
+  "scripts": {
+    "clean": "npx rimraf ./lib",
+    "build": "npm run clean && npm run build:cjs && npm run build:esm",
+    "build:cjs": "npx tsc -p tsconfig.cjs.json",
+    "build:esm": "npx tsc -p tsconfig.esm.json",
+    "prepare": "npx husky install",
+    "lint": "npx eslint ./src --ext .ts",
+    "lint:fix": "npx eslint ./src --ext .ts --fix",
+    "style:fix": "npx prettier --write 'src/**/*.ts'",
+    "style": "npx prettier --check 'src/**/*.ts'",
+    "test": "npx jest --passWithNoTests",
+    "test:coverage": "npx jest --coverage --silent --passWithNoTests",
+    "posttest:coverage": "npx make-coverage-badge --output-path './.github/assets/test-coverage.svg'",
+    "release": "npx standard-version",
+    "release:major": "npx standard-version --release-as major",
+    "release:minor": "npx standard-version --release-as minor",
+    "release:patch": "npx standard-version --release-as patch",
+    "release:alpha": "npx standard-version --prerelease alpha",
+    "release:beta": "npx standard-version --prerelease beta",
+    "release:rc": "npx standard-version --prerelease rc"
+  },
+  "devDependencies": {
+    "@types/jest": "^28.1.8",
+    "@types/node": "^18.11.9",
+    "@typescript-eslint/eslint-plugin": "^5.42.1",
+    "@typescript-eslint/parser": "^5.42.1",
+    "eslint": "^8.27.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-import-resolver-typescript": "^3.5.2",
+    "eslint-plugin-import": "^2.26.0",
+    "git-commit-msg-linter": "^4.2.1",
+    "husky": "^8.0.2",
+    "jest": "^28.1.3",
+    "lint-staged": "^13.0.3",
+    "make-coverage-badge": "^1.2.0",
+    "prettier": "^2.7.1",
+    "rimraf": "^3.0.2",
+    "standard-version": "^9.5.0",
+    "ts-jest": "^28.0.8",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
+  }
+}

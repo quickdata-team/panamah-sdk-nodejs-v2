@@ -1,0 +1,10 @@
+# don't ever lint node_modules
+node_modules
+
+# don't lint our output build
+build
+lib
+dist
+
+# don't lint jest.config.ts
+jest.config.ts
