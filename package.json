@@ -26,6 +26,7 @@
   },
   "scripts": {
     "clean": "npx rimraf ./lib",
+    "dev": "ts-node src/index.ts",
     "build": "npm run clean && npm run build:cjs && npm run build:esm",
     "build:cjs": "npx tsc -p tsconfig.cjs.json",
     "build:esm": "npx tsc -p tsconfig.esm.json",
