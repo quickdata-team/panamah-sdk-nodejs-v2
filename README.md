@@ -74,16 +74,22 @@ npm run style:fix
 
 ### Git Flow
 
+![Git Flow](./.github/assets/git-flow.svg)
+
 ### Conventional Commits
 
 ```sh
 <type>[optional scope]: <description>
 ```
 
-### Release
+### Update Release
 
 ```sh
 npm run release
 ```
 
 ## ☁️ Deploy
+
+Para realizar o deploy do SDK é necessário a execução dos seguintes passos: 
+
+![Pipeline Deploy](./.github/assets/pipeline-deploy.svg)
