@@ -30,7 +30,7 @@
     "build": "npm run clean && npm run build:cjs && npm run build:esm",
     "build:cjs": "npx tsc -p tsconfig.cjs.json",
     "build:esm": "npx tsc -p tsconfig.esm.json",
-    "prepare": "node -e \"if (process.env.NODE_ENV !== 'production'){process.exit(1)} \" || husky install",
+    "prepare": "npx husky install",
     "lint": "npx eslint ./src --ext .ts",
     "lint:fix": "npx eslint ./src --ext .ts --fix",
     "style:fix": "npx prettier --write 'src/**/*.ts'",
