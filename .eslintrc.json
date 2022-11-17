@@ -1,4 +1,5 @@
 {
+  "root": true,
   "env": {
     "browser": true,
     "es2021": true
@@ -41,13 +42,11 @@
     }
   },
   "overrides": [
-    { 
-      "files": [
-        "src/**/*.spec.ts"
-      ],
-      "env": { 
-        "jest": true 
-      } 
+    {
+      "files": ["src/**/*.spec.ts"],
+      "env": {
+        "jest": true
+      }
     }
   ]
 }
