@@ -23,8 +23,6 @@ import {
   StreamBadRequestError,
   AdminBadRequestError,
   XMLBadRequestError,
-  NFEBadRequestError,
-  NFEschemasBadRequestError,
 } from './BadRequestErrors';
 
 export {
@@ -33,8 +31,6 @@ export {
   StreamBadRequestError,
   AdminBadRequestError,
   XMLBadRequestError,
-  NFEBadRequestError,
-  NFEschemasBadRequestError,
   SubscriberConflictError,
   ForbiddenError,
   ForbiddenSubscriberError,
