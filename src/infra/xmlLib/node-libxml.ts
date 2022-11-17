@@ -1,17 +1,19 @@
 import Libxml from 'node-libxml';
 
+import path from 'path';
+
 export class LibXml {
   private libxml = new Libxml(); // Lib de XML
 
-  private schemaPath = 'schemas/'; // TO-DO: Criar logica melhor
+  private schemaPath = path.join(__dirname, './schemas/'); // TO-DO: Criar logica melhor
 
   /**
-   * @param {string} path
+   * @param {string} filePath
    * @return {*}
    * @memberof LibXml
    */
-  libLoadFromPath(path: string): boolean {
-    return this.libxml.loadXml(path);
+  libLoadFromPath(filePath: string): boolean {
+    return this.libxml.loadXml(filePath);
   }
 
   /**
@@ -32,7 +34,6 @@ export class LibXml {
       `${this.schemaPath}nfe_v4.00.xsd`,
       `${this.schemaPath}procNFe_v4.00.xsd`,
     ]);
-
     return this.libxml.validateAgainstSchemas();
   }
 }
