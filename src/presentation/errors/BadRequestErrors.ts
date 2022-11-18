@@ -48,3 +48,23 @@ export class XMLBadRequestError extends BaseError {
     );
   }
 }
+
+export class NFEBadRequestError extends BaseError {
+  constructor() {
+    super(
+      'NFEBadRequestError',
+      'NFE enviado possui campos inválidos ou inexistentes',
+      4005
+    );
+  }
+}
+
+export class NFEschemasBadRequestError extends BaseError {
+  constructor() {
+    super(
+      'NFEschemasBadRequestError',
+      'Não foi possível carregar os schemas para validaçao da NFE',
+      4006
+    );
+  }
+}
