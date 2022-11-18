@@ -7,9 +7,9 @@ import {
 import { LibXml } from '../infra/xmlLib';
 
 export class Xml extends LibXml {
-  public xmlIsWellformed!: boolean; // Se o XML é valido
+  public xmlIsWellformed!: boolean;
 
-  public nfeIsValid!: string | boolean | null; // Se a NFE é valida
+  public nfeIsValid!: boolean | null;
 
   validate(): boolean {
     if (!this.xmlIsWellformed) throw new XMLBadRequestError();

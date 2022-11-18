@@ -62,7 +62,7 @@ export class NFEBadRequestError extends BaseError {
 export class NFEschemasBadRequestError extends BaseError {
   constructor() {
     super(
-      'NFEBadRequestError',
+      'NFEschemasBadRequestError',
       'Não foi possível carregar os schemas para validaçao da NFE',
       4006
     );

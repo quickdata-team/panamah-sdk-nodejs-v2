@@ -1,1 +1,1 @@
-export { LibXml } from './node-libxml';
+export { NodeLibxml as LibXml } from './node-libxml';

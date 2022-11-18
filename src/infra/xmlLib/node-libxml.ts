@@ -2,15 +2,15 @@ import Libxml from 'node-libxml';
 
 import path from 'path';
 
-export class LibXml {
-  private libxml = new Libxml(); // Lib de XML
+export class NodeLibxml {
+  private libxml = new Libxml();
 
   private schemaPath = path.join(__dirname, './schemas/'); // TO-DO: Criar logica melhor
 
   /**
    * @param {string} filePath
-   * @return {*}
-   * @memberof LibXml
+   * @return {*}  {boolean}
+   * @memberof NodeLibxml
    */
   libLoadFromPath(filePath: string): boolean {
     return this.libxml.loadXml(filePath);
@@ -18,22 +18,30 @@ export class LibXml {
 
   /**
    * @param {string} xmlContent
-   * @return {*}
-   * @memberof LibXml
+   * @return {*}  {boolean}
+   * @memberof NodeLibxml
    */
   libLoadFromString(xmlContent: string): boolean {
     return this.libxml.loadXmlFromString(xmlContent);
   }
 
   /**
-   * @return {*}
-   * @memberof LibXml
+   * Sobre os retornos:
+   * True = ok;
+   * False = Erro. A NFE não bate com o schema
+   * Null = Erro. Nenhum schema carregado
+   * @return {*}  {(boolean | null)}
+   * @memberof NodeLibxml
    */
-  libValidate(): string | boolean | null {
+  libValidate(): boolean | null {
     this.libxml.loadSchemas([
       `${this.schemaPath}nfe_v4.00.xsd`,
       `${this.schemaPath}procNFe_v4.00.xsd`,
     ]);
-    return this.libxml.validateAgainstSchemas();
+
+    const validate = this.libxml.validateAgainstSchemas();
+
+    if (typeof validate === 'string') return true;
+    return validate;
   }
 }
