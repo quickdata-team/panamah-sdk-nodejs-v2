@@ -2,9 +2,9 @@ import {
   XMLBadRequestError,
   NFEBadRequestError,
   NFEschemasBadRequestError,
-} from '../presentation/errors';
+} from './erro';
 
-import { LibXml } from '../infra/xmlLib';
+import { LibXml } from '../../infra/adaptors';
 
 export class Xml extends LibXml {
   public xmlIsWellformed!: boolean;
