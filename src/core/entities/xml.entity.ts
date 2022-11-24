@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs';
 import {
   XMLBadRequestError,
   NFEBadRequestError,
@@ -7,9 +8,11 @@ import {
 import { LibXml } from '../../infra/adaptors';
 
 export class Xml extends LibXml {
-  public xmlIsWellformed!: boolean;
+  public xmlIsWellformed: boolean = false;
 
-  public nfeIsValid!: boolean | null;
+  public nfeIsValid: boolean | null = false;
+
+  public nfeContent: string = '';
 
   validate(): boolean {
     if (!this.xmlIsWellformed) throw new XMLBadRequestError();
@@ -25,6 +28,7 @@ export class Xml extends LibXml {
   loadFromPath(path: string): boolean {
     try {
       this.xmlIsWellformed = this.libLoadFromPath(path);
+      this.nfeContent = readFileSync(path, 'utf-8');
       if (!this.xmlIsWellformed) throw new XMLBadRequestError();
       return true;
     } catch (error) {
@@ -35,6 +39,7 @@ export class Xml extends LibXml {
   loadFromString(xmlContent: string): boolean {
     try {
       this.xmlIsWellformed = this.libLoadFromString(xmlContent);
+      this.nfeContent = xmlContent;
       if (!this.xmlIsWellformed) throw new XMLBadRequestError();
       return true;
     } catch (error) {
