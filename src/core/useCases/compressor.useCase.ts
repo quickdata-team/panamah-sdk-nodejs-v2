@@ -1,10 +1,35 @@
 import { Xml } from '../entities/xml.entity';
 import { Storage } from '../entities/storage.entity';
+import {
+  BaseError,
+  XMLBadRequestError,
+  NFEBadRequestError,
+  NFEschemasBadRequestError,
+} from '../entities/erro';
 
 export class Compressor extends Storage {
   public authetication: boolean = true;
 
-  public send(nfeContent: string, fromPath = true): void {
+  /**
+   * Armazenamento e controle dos XML
+   * @param {string} nfeContent
+   * @param {boolean} [fromPath=true]
+   * @return {*}  {(void
+   *     | XMLBadRequestError
+   *     | NFEBadRequestError
+   *     | NFEschemasBadRequestError
+   *     | BaseError)}
+   * @memberof Compressor
+   */
+  public send(
+    nfeContent: string,
+    fromPath: boolean = true
+  ):
+    | void
+    | XMLBadRequestError
+    | NFEBadRequestError
+    | NFEschemasBadRequestError
+    | BaseError {
     const XML = new Xml();
 
     // Carrega XML

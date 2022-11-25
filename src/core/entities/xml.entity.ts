@@ -14,7 +14,19 @@ export class Xml extends LibXml {
 
   public nfeContent: string = '';
 
-  validate(): boolean {
+  /**
+   * Valida um XML
+   * @return {*}  {(boolean
+   *     | XMLBadRequestError
+   *     | NFEschemasBadRequestError
+   *     | NFEBadRequestError)}
+   * @memberof Xml
+   */
+  validate():
+    | boolean
+    | XMLBadRequestError
+    | NFEschemasBadRequestError
+    | NFEBadRequestError {
     if (!this.xmlIsWellformed) throw new XMLBadRequestError();
 
     this.nfeIsValid = this.libValidate();
@@ -25,7 +37,13 @@ export class Xml extends LibXml {
     return true;
   }
 
-  loadFromPath(path: string): boolean {
+  /**
+   * Carrega um XML a partir de um path
+   * @param {string} path
+   * @return {*}  {(boolean | XMLBadRequestError)}
+   * @memberof Xml
+   */
+  loadFromPath(path: string): boolean | XMLBadRequestError {
     try {
       this.xmlIsWellformed = this.libLoadFromPath(path);
       this.nfeContent = readFileSync(path, 'utf-8');
@@ -36,7 +54,13 @@ export class Xml extends LibXml {
     }
   }
 
-  loadFromString(xmlContent: string): boolean {
+  /**
+   * Carrega um XML a partir de uma string
+   * @param {string} xmlContent
+   * @return {*}  {(boolean | XMLBadRequestError)}
+   * @memberof Xml
+   */
+  loadFromString(xmlContent: string): boolean | XMLBadRequestError {
     try {
       this.xmlIsWellformed = this.libLoadFromString(xmlContent);
       this.nfeContent = xmlContent;
