@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs';
 import {
   XMLBadRequestError,
   NFEBadRequestError,
@@ -7,11 +8,25 @@ import {
 import { LibXml } from '../../infra/adaptors';
 
 export class Xml extends LibXml {
-  public xmlIsWellformed!: boolean;
+  public xmlIsWellformed: boolean = false;
 
-  public nfeIsValid!: boolean | null;
+  public nfeIsValid: boolean | null = false;
 
-  validate(): boolean {
+  public nfeContent: string = '';
+
+  /**
+   * Valida um XML
+   * @return {*}  {(boolean
+   *     | XMLBadRequestError
+   *     | NFEschemasBadRequestError
+   *     | NFEBadRequestError)}
+   * @memberof Xml
+   */
+  validate():
+    | boolean
+    | XMLBadRequestError
+    | NFEschemasBadRequestError
+    | NFEBadRequestError {
     if (!this.xmlIsWellformed) throw new XMLBadRequestError();
 
     this.nfeIsValid = this.libValidate();
@@ -22,9 +37,16 @@ export class Xml extends LibXml {
     return true;
   }
 
-  loadFromPath(path: string): boolean {
+  /**
+   * Carrega um XML a partir de um path
+   * @param {string} path
+   * @return {*}  {(boolean | XMLBadRequestError)}
+   * @memberof Xml
+   */
+  loadFromPath(path: string): boolean | XMLBadRequestError {
     try {
       this.xmlIsWellformed = this.libLoadFromPath(path);
+      this.nfeContent = readFileSync(path, 'utf-8');
       if (!this.xmlIsWellformed) throw new XMLBadRequestError();
       return true;
     } catch (error) {
@@ -32,9 +54,16 @@ export class Xml extends LibXml {
     }
   }
 
-  loadFromString(xmlContent: string): boolean {
+  /**
+   * Carrega um XML a partir de uma string
+   * @param {string} xmlContent
+   * @return {*}  {(boolean | XMLBadRequestError)}
+   * @memberof Xml
+   */
+  loadFromString(xmlContent: string): boolean | XMLBadRequestError {
     try {
       this.xmlIsWellformed = this.libLoadFromString(xmlContent);
+      this.nfeContent = xmlContent;
       if (!this.xmlIsWellformed) throw new XMLBadRequestError();
       return true;
     } catch (error) {

@@ -26,3 +26,5 @@ export {
 } from './BadRequestErrors';
 
 export { SubscriberConflictError } from './ConflictErrors';
+
+export { BaseError } from './BaseError';

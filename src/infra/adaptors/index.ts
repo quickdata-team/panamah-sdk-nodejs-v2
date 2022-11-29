@@ -19,3 +19,6 @@ export {
   UnprocessableEntityError,
   InternalServerError,
 } from '../../core/entities/erro';
+
+export { NfeXml as LibNfe } from '../externalInterfaces/nfeLib';
+export { FsLib as LibStorage } from '../externalInterfaces/storageLib';
