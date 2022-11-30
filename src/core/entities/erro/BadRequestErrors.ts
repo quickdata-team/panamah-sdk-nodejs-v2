@@ -4,7 +4,8 @@ export class BadRequestError extends BaseError {
   constructor() {
     super(
       'BadRequestError',
-      'Requisão possui campos inválidos ou inexistentes'
+      'Requisão possui campos inválidos ou inexistentes',
+      4000
     );
   }
 }
