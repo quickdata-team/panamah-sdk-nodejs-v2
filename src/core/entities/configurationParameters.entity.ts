@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { IHttpClient } from '../../infra/externalInterfaces/httpClient/IHttpClient';
 import { HttpClient, InternalServerError } from '../../infra/adaptors/index';
 
