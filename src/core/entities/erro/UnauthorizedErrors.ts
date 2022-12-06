@@ -15,3 +15,9 @@ export class UnauthorizedPartnerError extends BaseError {
     super('UnauthorizedPartnerError', 'Parceiro não possui autenticação', 4012);
   }
 }
+
+export class InvalidApiKeyHeaderError extends BaseError {
+  constructor() {
+    super('InvalidApiKeyHeaderError', 'Cabeçalho x-api-key inválido', 4015);
+  }
+}

@@ -2,11 +2,16 @@ export { UnprocessableEntityError } from './UnprocessableEntityErrors';
 
 export { InternalServerError } from './InternalServerErrors';
 
-export { ForbiddenError, ForbiddenSubscriberError } from './ForbiddenErrors';
+export {
+  ForbiddenError,
+  ForbiddenSubscriberError,
+  ForbiddenUserError,
+} from './ForbiddenErrors';
 
 export {
   UnauthorizedPartnerError,
   UnauthorizedSubscriberError,
+  InvalidApiKeyHeaderError,
 } from './UnauthorizedErrors';
 
 export {

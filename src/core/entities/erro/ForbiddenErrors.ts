@@ -19,3 +19,9 @@ export class ForbiddenSubscriberError extends BaseError {
     );
   }
 }
+
+export class ForbiddenUserError extends BaseError {
+  constructor() {
+    super('ForbiddenUserError', 'Usuário e/ou senha incorreto(s)', 4032);
+  }
+}
