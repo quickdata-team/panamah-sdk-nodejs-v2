@@ -12,7 +12,7 @@ export class Partner {
 
   active!: number;
 
-  static tableName = 'id';
+  static tableName = 'partners';
 
   static idColumn = ['id'];
 
