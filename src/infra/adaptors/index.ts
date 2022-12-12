@@ -1,6 +1,10 @@
 export { NodeLibxml as LibXml } from '../externalInterfaces/xmlLib/node-libxml';
 
 export { AxiosHttpClient as HttpClient } from '../externalInterfaces/httpClient/implementations/AxiosHttpClient';
+export {
+  IHttpClient,
+  IAuthResponse,
+} from '../externalInterfaces/httpClient/IHttpClient';
 
 export {
   BadRequestError,
@@ -24,3 +28,4 @@ export {
 
 export { NfeXml as LibNfe } from '../externalInterfaces/nfeLib';
 export { FsLib as LibStorage } from '../externalInterfaces/storageLib';
+export { LogLib as LibLogger } from '../externalInterfaces/loggerLib';
