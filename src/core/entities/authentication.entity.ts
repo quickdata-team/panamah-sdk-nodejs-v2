@@ -1,8 +1,4 @@
-import { HttpClient } from '../../infra/adaptors';
-import {
-  IAuthResponse,
-  IHttpClient,
-} from '../../infra/externalInterfaces/httpClient/IHttpClient';
+import { HttpClient, IHttpClient, IAuthResponse } from '../../infra/adaptors';
 import {
   InternalServerError,
   ForbiddenUserError,
@@ -27,8 +23,8 @@ export class AuthenticationEntity {
       const response = await this.httpClient.auth({ username, password });
       this.setTokens(response);
     } catch (err) {
-      const { data } = err.response;
-      if (data) {
+      if (err.response && err.response.data) {
+        const { data } = err.response;
         if (data.statusCode === 4032) throw new ForbiddenUserError();
         if (data.statusCode === 4015) throw new InvalidApiKeyHeaderError();
       }
@@ -41,7 +37,7 @@ export class AuthenticationEntity {
     this.setTokens(response);
   }
 
-  public isAuthenticated() {
+  public isAuthenticated(): boolean {
     if (this.expiresIn) {
       return this.expiresIn > new Date().getTime();
     }
