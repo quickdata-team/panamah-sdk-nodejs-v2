@@ -5,10 +5,18 @@ import {
   XMLBadRequestError,
   NFEBadRequestError,
   NFEschemasBadRequestError,
+  ForbiddenUserError,
 } from '../entities/erro';
+import { StreamingFlow } from './streamingFlow.useCase';
 
-export class Compressor extends Storage {
+export class Compressor {
   public authetication: boolean = true;
+
+  private streamingFlow: StreamingFlow;
+
+  constructor(streamingFlow: StreamingFlow) {
+    this.streamingFlow = streamingFlow;
+  }
 
   /**
    * Armazenamento e controle dos XML
@@ -42,20 +50,16 @@ export class Compressor extends Storage {
     // Valida XML
     XML.validate();
 
-    // Autentica usuario
-    this.authenticate();
+    // Verifica autenticação
+    if (!this.streamingFlow.isAuthenticated()) throw new ForbiddenUserError();
 
     // Cria diretorio para salvar o XML
-    this.createDir();
+    Storage.createDir();
 
     // Cria nome unico
-    const fileName = this.createFileName(XML);
+    const fileName = Storage.createFileName(XML);
 
     // Salva XML
-    this.save(fileName, XML);
-  }
-
-  private authenticate() {
-    return this.authetication;
+    Storage.save(fileName, XML);
   }
 }
