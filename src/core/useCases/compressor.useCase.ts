@@ -29,15 +29,18 @@ export class Compressor {
    *     | BaseError)}
    * @memberof Compressor
    */
-  public send(
+  public async send(
     nfeContent: string,
     fromPath: boolean = true
-  ):
+  ): Promise<
     | void
     | XMLBadRequestError
     | NFEBadRequestError
     | NFEschemasBadRequestError
-    | BaseError {
+    | BaseError
+  > {
+    await this.streamingFlow.checkForBlocking();
+
     const XML = new Xml();
 
     // Carrega XML
