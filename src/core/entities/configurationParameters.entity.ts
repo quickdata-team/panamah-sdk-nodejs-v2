@@ -1,7 +1,7 @@
 import { IHttpClient } from '../../infra/externalInterfaces/httpClient/IHttpClient';
 import { HttpClient, InternalServerError } from '../../infra/adaptors/index';
 
-interface ILimitsParameters {
+export interface ILimitsParameters {
   sizeLimitInBytes: number;
   timeLimitInMs: number;
 }
@@ -24,10 +24,10 @@ export class ConfigurationParameters implements ILimitsParameters {
     this.timeLimitInMs = timeLimitInMs;
   }
 
-  getLimits() {
+  getLimits(): ILimitsParameters {
     return {
-      sizeLimit: this.sizeLimitInBytes,
-      timeLimit: this.timeLimitInMs,
+      sizeLimitInBytes: this.sizeLimitInBytes,
+      timeLimitInMs: this.timeLimitInMs,
     };
   }
 
