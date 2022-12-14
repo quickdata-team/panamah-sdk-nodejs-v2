@@ -12,7 +12,6 @@
     "useUnknownInCatchVariables": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "baseUrl": ".",
     "allowSyntheticDefaultImports": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -20,9 +19,18 @@
     "noImplicitThis": true,
     "alwaysStrict": true,
     "noImplicitReturns": true,
-    "declaration": true
+    "declaration": true,
+    "baseUrl": ".",
+    "paths": {
+      "@entities": ["src/core/entities/index"],
+      "@errors": ["src/core/entities/erro/index"],
+      "@useCases": ["src/core/useCases/index"],
+      "@infra": ["src/infra/adaptors/index"]
+    }
   },
-  "include": [
-    "src/**/*.ts",
-  ]
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  },
+  "include": ["./src"],
+  "exclude": ["node_modules"]
 }

@@ -1,5 +1,5 @@
 import { Draft07, Draft, JSONError } from 'json-schema-library';
-import { SubscriberBadRequestError } from './erro';
+import { SubscriberBadRequestError } from '@errors';
 
 export class Subscriber {
   id!: string;

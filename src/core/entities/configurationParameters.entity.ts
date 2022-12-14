@@ -3,7 +3,7 @@ import {
   HttpClient,
   InternalServerError,
   ILimitsParameters,
-} from '../../infra/adaptors';
+} from '@infra';
 
 export class ConfigurationParameters implements ILimitsParameters {
   httpClient: IHttpClient;

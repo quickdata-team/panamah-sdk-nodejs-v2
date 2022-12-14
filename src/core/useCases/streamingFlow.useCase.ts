@@ -1,10 +1,12 @@
 /* eslint-disable no-await-in-loop */
-import { ConfigurationParameters } from '../entities/configurationParameters.entity';
-import { ILimitsParameters } from '../../infra/adaptors';
-import { Storage } from '../entities/storage.entity';
-import { AuthenticationEntity } from '../entities/authentication.entity';
-import { Logger } from '../entities/Logger.entity';
-import { ApiServiceEntity } from '../entities/apiService.entity';
+import {
+  ConfigurationParameters,
+  Storage,
+  AuthenticationEntity,
+  Logger,
+  ApiServiceEntity,
+} from '@entities';
+import { ILimitsParameters } from '@infra';
 
 type toBeSent = {
   data: {

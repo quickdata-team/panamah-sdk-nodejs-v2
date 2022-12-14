@@ -1,9 +1,9 @@
-import { HttpClient, IHttpClient, IAuthResponse } from '../../infra/adaptors';
+import { HttpClient, IHttpClient, IAuthResponse } from '@infra';
 import {
   InternalServerError,
   ForbiddenUserError,
   InvalidApiKeyHeaderError,
-} from './erro';
+} from '@errors';
 
 export class AuthenticationEntity {
   private accessToken!: string;
