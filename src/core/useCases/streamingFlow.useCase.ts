@@ -10,7 +10,6 @@ import { Logger } from '../entities/Logger.entity';
 type toBeSent = {
   data: {
     name: string;
-    // size: number;
     content: string;
   }[];
 };
@@ -22,120 +21,144 @@ export class StreamingFlow {
 
   private parameters!: ILimitsParameters;
 
-  private mutex = false; // Se esta sendo executado uma operação bloqueante
-
-  private mutexWaitMs = 1000; // Intervalo de espera em caso de operações bloqueantes
-
-  private streamingLoopIntervalMs = 1000; // Intervalo de envio do SDK para a API
-
-  private refreshTokenLoopIntervalMs = 1000; // Intervalo de refresh de tokens
-
-  private isRunning: boolean = false;
+  private runningStatus = {
+    terminate: true, // Force stop flag
+    mutex: false, // Se esta sendo executado uma operação bloqueante
+    mutexWaitMs: 1000, // Intervalo de espera em caso de operações bloqueantes
+    streamingLoop: false, // Flag de running do streamingloop
+    streamingLoopIntervalMs: 1000, // Intervalo de envio do SDK para a API
+    refreshTokenLoop: false, // Flag de running do refreshToken
+    refreshTokenLoopIntervalMs: 2000, // Intervalo de refresh de tokens
+  };
 
   public async init({ username, password }: any) {
     try {
-      this.isRunning = true;
-      this.mutex = true;
+      this.runningStatus = {
+        ...this.runningStatus,
+        terminate: false,
+        mutex: true,
+      };
       await this.authenticationEntity.authenticate({
         username,
         password,
       });
+
       this.streamingLoop();
-      // this.refreshTokenLoop();
+      this.refreshTokenLoop();
     } catch (error) {
-      this.isRunning = false;
+      this.runningStatus.terminate = true;
       throw error;
     } finally {
-      this.mutex = false;
+      this.runningStatus.mutex = false;
     }
   }
 
   private async delay(): Promise<void> {
     return new Promise((r) =>
       // eslint-disable-next-line no-promise-executor-return
-      setTimeout(r, this.mutexWaitMs)
+      setTimeout(r, this.runningStatus.mutexWaitMs)
     );
   }
 
   private streamingLoop(): void {
     setTimeout(async () => {
-      // try {
-      if (!this.isRunning) {
-        return;
-      }
+      try {
+        if (this.runningStatus.terminate) {
+          return;
+        }
 
-      if (this.mutex) {
-        await this.delay();
-      }
+        if (this.runningStatus.mutex) {
+          await this.delay();
+        }
+        this.runningStatus = {
+          ...this.runningStatus,
+          mutex: true,
+          streamingLoop: true,
+        };
 
-      // Busca limites
-      this.parameters = this.getConfigParams();
+        // Busca limites
+        this.parameters = this.getConfigParams();
 
-      // Busca arquivos a serem enviados
-      const fileNames = Storage.getFileList();
+        // Busca arquivos a serem enviados
+        const fileNames = Storage.getFileList();
 
-      // Verifica limites
-      if (!this.anyLimitReached(fileNames)) {
+        // Verifica limites
+        if (!this.anyLimitReached(fileNames)) {
+          // Loga arquivos enviados
+          StreamingFlow.logSentFiles([]);
+          return;
+        }
+
+        // Cria e envia o arquivo
+        const apiResponse = StreamingFlow.sendJson(fileNames);
+
         // Loga arquivos enviados
-        StreamingFlow.logSentFiles([]);
-        return;
+        StreamingFlow.logSentFiles(fileNames);
+
+        // Atualiza parametros
+        this.setConfigParams(apiResponse);
+
+        // Deleta arquivos enviados
+        StreamingFlow.cleanFilesSent(fileNames);
+      } finally {
+        this.runningStatus = {
+          ...this.runningStatus,
+          mutex: false,
+          streamingLoop: false,
+        };
+
+        if (!this.runningStatus.terminate) {
+          this.streamingLoop();
+        }
       }
-
-      // Cria e envia o arquivo
-      const apiResponse = StreamingFlow.sendJson(fileNames);
-
-      // Loga arquivos enviados
-      StreamingFlow.logSentFiles(fileNames);
-
-      // Atualiza parametros
-      this.setConfigParams(apiResponse);
-
-      // Deleta arquivos enviados
-      StreamingFlow.cleanFilesSent(fileNames);
-
-      // Loop recursivo
-      this.streamingLoop();
-      // } finally {
-      //   // Loop recursivo
-      //   this.streamingLoop();
-      // }
-    }, this.streamingLoopIntervalMs);
+    }, this.runningStatus.streamingLoopIntervalMs);
   }
 
   private refreshTokenLoop(): void {
     setTimeout(async () => {
-      // try {
-      if (!this.isRunning) {
-        return;
+      try {
+        if (this.runningStatus.terminate) {
+          return;
+        }
+
+        if (this.runningStatus.mutex) {
+          await this.delay();
+        }
+
+        this.runningStatus = {
+          ...this.runningStatus,
+          mutex: true,
+          refreshTokenLoop: true,
+        };
+        await this.authenticationEntity.refreshTokens();
+      } finally {
+        this.runningStatus = {
+          ...this.runningStatus,
+          mutex: false,
+          refreshTokenLoop: false,
+        };
+
+        if (!this.runningStatus.terminate) {
+          this.streamingLoop();
+        }
       }
-
-      if (this.mutex) {
-        await this.delay();
-      }
-
-      this.mutex = true;
-
-      await this.authenticationEntity.refreshTokens();
-
-      this.mutex = false;
-
-      // Loop recursivo
-      this.refreshTokenLoop();
-      // } finally {
-      //   // Loop recursivo
-      //   this.streamingLoop();
-      // }
-    }, this.refreshTokenLoopIntervalMs);
+    }, this.runningStatus.refreshTokenLoopIntervalMs);
   }
 
   public async checkForBlocking() {
-    while (this.mutex) {
+    while (this.runningStatus.mutex) {
       await this.delay();
     }
   }
 
-  public terminate() {
-    this.isRunning = false;
+  public async terminate() {
+    this.runningStatus.terminate = true;
+    while (
+      this.runningStatus.streamingLoop ||
+      this.runningStatus.refreshTokenLoop
+    ) {
+      await this.delay();
+    }
   }
 
   private anyLimitReached(fileNames: string[]) {
@@ -153,11 +176,9 @@ export class StreamingFlow {
     for (const fileName of fileNames) {
       obj.data.push({
         name: fileName,
-        // size: Storage.getFileSize(fileName),
         content: Storage.loadFile(fileName),
       });
     }
-
     return {
       sizeLimitInBytes: 200,
       timeLimitInMs: 200,

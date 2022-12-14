@@ -34,7 +34,7 @@ export async function init({
  * @export
  * @return {*}  {void}
  */
-export function stop(): void {
+export async function stop(): Promise<void> {
   return streamingFlow.terminate();
 }
 
