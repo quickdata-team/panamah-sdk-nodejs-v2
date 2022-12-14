@@ -1,5 +1,4 @@
-import { Xml } from './xml.entity';
-import { LibNfe, LibStorage } from '../../infra/adaptors';
+import { LibNfe, LibStorage } from '@infra';
 
 export class Storage extends LibNfe {
   private static dirNfe = `/tmp/nfe`;
@@ -20,7 +19,7 @@ export class Storage extends LibNfe {
    * @return {*}  {string}
    * @memberof Storage
    */
-  static createFileName(XML: Xml): string {
+  static createFileName(XML: any): string {
     return this.getNfeId(XML.nfeContent);
   }
 
@@ -30,7 +29,7 @@ export class Storage extends LibNfe {
    * @param {Xml} XML
    * @memberof Storage
    */
-  static save(fileName: string, XML: Xml): void {
+  static save(fileName: string, XML: any): void {
     LibStorage.saveFile(`${this.dirNfe}/${fileName}`, XML.nfeContent);
   }
 

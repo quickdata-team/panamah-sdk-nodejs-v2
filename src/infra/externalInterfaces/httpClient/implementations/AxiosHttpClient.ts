@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import axios, { AxiosInstance } from 'axios';
 import {
   IAuthRequest,

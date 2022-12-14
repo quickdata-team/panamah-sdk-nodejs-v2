@@ -1,12 +1,11 @@
-import { Xml } from '../entities/xml.entity';
-import { Storage } from '../entities/storage.entity';
+import { Xml, Storage } from '@entities';
 import {
   BaseError,
   XMLBadRequestError,
   NFEBadRequestError,
   NFEschemasBadRequestError,
   ForbiddenUserError,
-} from '../entities/erro';
+} from '@errors';
 import { StreamingFlow } from './streamingFlow.useCase';
 
 export class Compressor {

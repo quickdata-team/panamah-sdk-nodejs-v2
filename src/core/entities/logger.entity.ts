@@ -1,4 +1,4 @@
-import { LibLogger, LibStorage } from '../../infra/adaptors';
+import { LibLogger, LibStorage } from '@infra';
 
 export class Logger {
   private static stdOutPath = './stdout';

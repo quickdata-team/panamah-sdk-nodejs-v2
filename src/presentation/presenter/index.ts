@@ -1,11 +1,10 @@
-import { Compressor } from '../../core/useCases/compressor.useCase';
-import { StreamingFlow } from '../../core/useCases/streamingFlow.useCase';
+import { Compressor, StreamingFlow } from '@useCases';
 import {
   BaseError,
   XMLBadRequestError,
   NFEBadRequestError,
   NFEschemasBadRequestError,
-} from '../../core/entities/erro';
+} from '@errors';
 
 export type IinitParameters = {
   username: string;

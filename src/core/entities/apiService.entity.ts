@@ -3,8 +3,8 @@ import {
   IHttpClient,
   IPostSaleResponse,
   IPostSaleRequest,
-} from '../../infra/adaptors';
-import { InternalServerError } from './erro';
+} from '@infra';
+import { InternalServerError } from '@errors';
 
 export class ApiServiceEntity {
   httpClient: IHttpClient;
