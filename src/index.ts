@@ -1,1 +1,1 @@
-export { helloWorld } from './example';
+export * from './presentation/presenter/index';

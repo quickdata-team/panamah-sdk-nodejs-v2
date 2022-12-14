@@ -46,7 +46,7 @@ export class AuthenticationEntity {
 
   private setTokens(data: IAuthResponse) {
     this.accessToken = data.accessToken;
-    this.refreshToken = data.refreshToken;
+    this.refreshToken = data.refreshToken || this.refreshToken;
     this.expiresIn = new Date().getTime() + data.expiresIn * 1000;
   }
 

@@ -1,10 +1,13 @@
 export { NodeLibxml as LibXml } from '../externalInterfaces/xmlLib/node-libxml';
 
-export { AxiosHttpClient as HttpClient } from '../externalInterfaces/httpClient/implementations/AxiosHttpClient';
 export {
+  AxiosHttpClient as HttpClient,
   IHttpClient,
   IAuthResponse,
-} from '../externalInterfaces/httpClient/IHttpClient';
+  IPostSaleRequest,
+  IPostSaleResponse,
+  ILimitsParameters,
+} from '../externalInterfaces/httpClient';
 
 export {
   BadRequestError,

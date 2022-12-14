@@ -1,10 +1,44 @@
 import { Compressor } from '../../core/useCases/compressor.useCase';
+import { StreamingFlow } from '../../core/useCases/streamingFlow.useCase';
 import {
   BaseError,
   XMLBadRequestError,
   NFEBadRequestError,
   NFEschemasBadRequestError,
 } from '../../core/entities/erro';
+
+export type IinitParameters = {
+  username: string;
+  password: string;
+};
+
+const streamingFlow = new StreamingFlow();
+/**
+ * Inicia o fluxo de envio
+ * @export
+ * @param {IinitParameters} {
+ *   username,
+ *   password,
+ * }
+ * @return {*}  {Promise<void>}
+ */
+export async function init({
+  username,
+  password,
+}: IinitParameters): Promise<void> {
+  return streamingFlow.init({ username, password });
+}
+
+/**
+ * Para o fluxo de envio e envia o que estiver pendente
+ * @export
+ * @return {*}  {void}
+ */
+export async function stop(): Promise<void> {
+  return streamingFlow.terminate();
+}
+
+const compressor = new Compressor(streamingFlow);
 
 /**
  * Método para salvar e enviar um XML de NFE
@@ -17,16 +51,17 @@ import {
  *   | NFEschemasBadRequestError
  *   | BaseError)}
  */
-export function send(
+export async function send(
   nfeContent: string,
   fromPath: boolean = true
-):
+): Promise<
   | void
   | XMLBadRequestError
   | NFEBadRequestError
   | NFEschemasBadRequestError
-  | BaseError {
-  return new Compressor().send(nfeContent, fromPath);
+  | BaseError
+> {
+  return compressor.send(nfeContent, fromPath);
 }
 
 export {
