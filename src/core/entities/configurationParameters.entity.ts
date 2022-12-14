@@ -1,10 +1,9 @@
-import { IHttpClient } from '../../infra/externalInterfaces/httpClient/IHttpClient';
-import { HttpClient, InternalServerError } from '../../infra/adaptors/index';
-
-export interface ILimitsParameters {
-  sizeLimitInBytes: number;
-  timeLimitInMs: number;
-}
+import {
+  IHttpClient,
+  HttpClient,
+  InternalServerError,
+  ILimitsParameters,
+} from '../../infra/adaptors';
 
 export class ConfigurationParameters implements ILimitsParameters {
   httpClient: IHttpClient;

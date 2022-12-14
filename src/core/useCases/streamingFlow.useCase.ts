@@ -1,15 +1,14 @@
 /* eslint-disable no-await-in-loop */
-import {
-  ConfigurationParameters,
-  ILimitsParameters,
-} from '../entities/configurationParameters.entity';
+import { ConfigurationParameters } from '../entities/configurationParameters.entity';
+import { ILimitsParameters } from '../../infra/adaptors';
 import { Storage } from '../entities/storage.entity';
 import { AuthenticationEntity } from '../entities/authentication.entity';
 import { Logger } from '../entities/Logger.entity';
+import { ApiServiceEntity } from '../entities/apiService.entity';
 
 type toBeSent = {
   data: {
-    name: string;
+    id: string;
     content: string;
   }[];
 };
@@ -18,6 +17,8 @@ export class StreamingFlow {
   private configurationParameters = new ConfigurationParameters();
 
   private authenticationEntity = new AuthenticationEntity();
+
+  private apiServiceEntity = new ApiServiceEntity();
 
   private parameters!: ILimitsParameters;
 
@@ -90,7 +91,7 @@ export class StreamingFlow {
         }
 
         // Cria e envia o arquivo
-        const apiResponse = StreamingFlow.sendJson(fileNames);
+        const apiResponse = await this.sendJson(fileNames);
 
         // Loga arquivos enviados
         StreamingFlow.logSentFiles(fileNames);
@@ -169,20 +170,18 @@ export class StreamingFlow {
     return false;
   }
 
-  private static sendJson(fileNames: string[]) {
-    const obj: toBeSent = {
+  private async sendJson(fileNames: string[]) {
+    const postObj: toBeSent = {
       data: [],
     };
     for (const fileName of fileNames) {
-      obj.data.push({
-        name: fileName,
+      postObj.data.push({
+        id: fileName,
         content: Storage.loadFile(fileName),
       });
     }
-    return {
-      sizeLimitInBytes: 200,
-      timeLimitInMs: 200,
-    };
+    const response = await this.apiServiceEntity.postSale(postObj);
+    return response.newParameters;
   }
 
   private static logSentFiles(fileNames: string[]) {
