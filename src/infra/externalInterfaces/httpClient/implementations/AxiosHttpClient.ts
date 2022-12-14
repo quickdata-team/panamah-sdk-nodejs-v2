@@ -1,6 +1,12 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import axios, { AxiosInstance } from 'axios';
-import { IAuthRequest, IAuthResponse, IHttpClient } from '../IHttpClient';
+import {
+  IAuthRequest,
+  IAuthResponse,
+  IHttpClient,
+  IPostSaleRequest,
+  IPostSaleResponse,
+} from '../IHttpClient';
 
 export class AxiosHttpClient implements IHttpClient {
   private httpClient: AxiosInstance;
@@ -16,6 +22,23 @@ export class AxiosHttpClient implements IHttpClient {
   public async get(url: string): Promise<any> {
     const { data } = await this.httpClient.get(url);
     return data;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  public async post(
+    // eslint-disable-next-line no-unused-vars
+    url: string,
+    // eslint-disable-next-line no-unused-vars
+    postData: IPostSaleRequest
+  ): Promise<IPostSaleResponse> {
+    // const { data } = await this.httpClient.post(url, postData);
+    // return data;
+    return {
+      newParameters: {
+        sizeLimitInBytes: 100,
+        timeLimitInMs: 100,
+      },
+    };
   }
 
   public async auth({
