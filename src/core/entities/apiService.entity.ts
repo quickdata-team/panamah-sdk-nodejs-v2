@@ -17,8 +17,12 @@ export class ApiServiceEntity {
     postSaleRequest: IPostSaleRequest
   ): Promise<IPostSaleResponse> {
     try {
-      const post = await this.httpClient.post('/postData', postSaleRequest);
-      return post;
+      const { data } = await this.httpClient.post(
+        '/postData',
+        postSaleRequest,
+        ''
+      );
+      return data;
     } catch (err) {
       throw new InternalServerError();
     }
