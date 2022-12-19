@@ -1,4 +1,4 @@
-import { Compressor, StreamingFlow } from '@useCases';
+import { Compressor, StreamingFlow, AdministrativeUseCase } from '@useCases';
 import {
   BaseError,
   XMLBadRequestError,
@@ -62,6 +62,8 @@ export async function send(
 > {
   return compressor.send(nfeContent, fromPath);
 }
+
+export const administrative = new AdministrativeUseCase();
 
 export {
   UnprocessableEntityError,

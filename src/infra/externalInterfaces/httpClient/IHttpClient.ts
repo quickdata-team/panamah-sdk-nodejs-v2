@@ -27,8 +27,10 @@ export interface IPostSaleRequest {
 }
 
 export interface IHttpClient {
-  get(url: string): Promise<any>;
-  post(url: string, data: any): Promise<any>;
+  get(url: string, token: string): Promise<any>;
+  post(url: string, payload: any, token: string): Promise<any>;
+  put(url: string, payload: any, token: string): Promise<any>;
+  delete(url: string, token: string): Promise<any>;
   auth(data: IAuthRequest): Promise<IAuthResponse>;
   refreshTokens(refreshToken: string): Promise<IAuthResponse>;
 }

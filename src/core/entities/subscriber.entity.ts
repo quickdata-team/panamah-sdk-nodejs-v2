@@ -171,7 +171,7 @@ export class Subscriber {
         maxLength: 100,
       },
       cnpj: {
-        type: 'number',
+        type: 'string',
       },
     },
   };
@@ -186,7 +186,6 @@ export class Subscriber {
   static validate(subscriber: any): true | SubscriberBadRequestError {
     const jsonSchema: Draft = new Draft07(this.jsonSchema);
     const errors: JSONError[] = jsonSchema.validate(subscriber);
-
     if (errors.length > 0) {
       throw new SubscriberBadRequestError();
     }

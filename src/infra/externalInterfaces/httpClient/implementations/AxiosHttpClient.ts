@@ -1,11 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
-import {
-  IAuthRequest,
-  IAuthResponse,
-  IHttpClient,
-  IPostSaleRequest,
-  IPostSaleResponse,
-} from '../IHttpClient';
+
+import { IAuthRequest, IAuthResponse, IHttpClient } from '../IHttpClient';
 
 export class AxiosHttpClient implements IHttpClient {
   private httpClient: AxiosInstance;
@@ -15,29 +10,47 @@ export class AxiosHttpClient implements IHttpClient {
   constructor(baseUrl?: string) {
     this.httpClient = axios.create({
       baseURL: baseUrl || this.defaultUrl,
+      headers: {
+        'x-sdk-identity': 'panamah-nodejs-0.0.1',
+      },
+      timeout: 20000,
     });
   }
 
-  public async get(url: string): Promise<any> {
-    const { data } = await this.httpClient.get(url);
+  public async get(url: string, token: string): Promise<any> {
+    const { data } = await this.httpClient.get(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return data;
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  public async post(
-    // eslint-disable-next-line no-unused-vars
-    url: string,
-    // eslint-disable-next-line no-unused-vars
-    postData: IPostSaleRequest
-  ): Promise<IPostSaleResponse> {
-    // const { data } = await this.httpClient.post(url, postData);
-    // return data;
-    return {
-      newParameters: {
-        sizeLimitInBytes: 100,
-        timeLimitInMs: 100,
+  public async post(url: string, payload: any, token: string): Promise<any> {
+    const { status, data } = await this.httpClient.post(url, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    };
+    });
+    return { data, status };
+  }
+
+  public async put(url: string, payload: any, token: string): Promise<any> {
+    const { status, data } = await this.httpClient.put(url, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return { status, data };
+  }
+
+  public async delete(url: string, token: string): Promise<any> {
+    const { status, data } = await this.httpClient.delete(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return { data, status };
   }
 
   public async auth({

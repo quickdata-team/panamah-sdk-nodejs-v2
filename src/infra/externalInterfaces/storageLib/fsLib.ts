@@ -60,22 +60,20 @@ export class FsLib {
     const logObj = [];
     const lines = readFileSync(path, 'utf8').toString().split('\n');
 
-    // line -> [12/11/2022, 8:26:26 PM] : teste
+    // line -> [12/11/2022 8:26:26 PM] : teste
     for (const line of lines) {
       if (line === '') {
         continue;
       }
 
-      // line: 12/11/2022, 8:26:26 PM] : teste
+      // line: 12/11/2022 8:26:26 PM] : teste
       const lineCleanLeft = line.split('[')[1];
       // date -> 12/11/2022
-      const date = lineCleanLeft.split(',')[0];
-      // line -> 8:26:26 PM] : teste
-      const lineCleanCenter = lineCleanLeft.split(',')[1];
+      const date = lineCleanLeft.split(' ')[0];
       // hour -> 8:26:26 PM
-      const hour = lineCleanCenter.split(']')[0].split(' ')[1];
+      const hour = lineCleanLeft.split(' ')[1];
       // -> teste
-      const message = lineCleanCenter.split(': ')[1];
+      const message = lineCleanLeft.split(': ')[1];
 
       logObj.push({
         date,

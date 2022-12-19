@@ -32,7 +32,7 @@ export class ConfigurationParameters implements ILimitsParameters {
 
   async syncLimits() {
     try {
-      const data = await this.httpClient.get('/limits');
+      const data = await this.httpClient.get('/limits', '');
       this.setLimits({
         sizeLimitInBytes: data.sizeLimit,
         timeLimitInMs: data.timeLimit,
