@@ -5,6 +5,7 @@ import {
   AuthenticationEntity,
   Logger,
   ApiServiceEntity,
+  Mutex,
 } from '@entities';
 import { ILimitsParameters } from '@infra';
 
@@ -16,31 +17,36 @@ type toBeSent = {
 };
 
 export class StreamingFlow {
-  private configurationParameters = new ConfigurationParameters();
+  private streamingLoopIntervalMs = 1000; // Intervalo de envio do SDK para a API
 
-  private authenticationEntity = new AuthenticationEntity();
+  private refreshTokenLoopIntervalMs = 2000; // Intervalo de refresh de tokens
+
+  private mutex: Mutex;
+
+  private authenticationEntity: AuthenticationEntity;
+
+  private configurationParameters: ConfigurationParameters;
 
   private apiServiceEntity = new ApiServiceEntity();
 
   private parameters!: ILimitsParameters;
 
-  private runningStatus = {
-    terminate: true, // Force stop flag
-    mutex: false, // Se esta sendo executado uma operação bloqueante
-    mutexWaitMs: 1000, // Intervalo de espera em caso de operações bloqueantes
-    streamingLoop: false, // Flag de running do streamingloop
-    streamingLoopIntervalMs: 1000, // Intervalo de envio do SDK para a API
-    refreshTokenLoop: false, // Flag de running do refreshToken
-    refreshTokenLoopIntervalMs: 2000, // Intervalo de refresh de tokens
-  };
+  constructor(
+    mutex: Mutex,
+    authenticationEntity: AuthenticationEntity,
+    configurationParameters: ConfigurationParameters
+  ) {
+    this.mutex = mutex;
+    this.authenticationEntity = authenticationEntity;
+    this.configurationParameters = configurationParameters;
+  }
 
   public async init({ username, password }: any) {
     try {
-      this.runningStatus = {
-        ...this.runningStatus,
+      this.mutex.setStatus({
         terminate: false,
         mutex: true,
-      };
+      });
       await this.authenticationEntity.authenticate({
         username,
         password,
@@ -49,38 +55,23 @@ export class StreamingFlow {
       this.streamingLoop();
       this.refreshTokenLoop();
     } catch (error) {
-      this.runningStatus.terminate = true;
+      this.mutex.setStatus({ terminate: true });
       throw error;
     } finally {
-      this.runningStatus.mutex = false;
+      this.mutex.setStatus({ mutex: false });
     }
-  }
-
-  private async delay(): Promise<void> {
-    return new Promise((r) =>
-      // eslint-disable-next-line no-promise-executor-return
-      setTimeout(r, this.runningStatus.mutexWaitMs)
-    );
   }
 
   private streamingLoop(): void {
     setTimeout(async () => {
       try {
-        if (this.runningStatus.terminate) {
+        if (this.mutex.getStatus().terminate) {
           return;
         }
 
-        if (this.runningStatus.mutex) {
-          await this.delay();
-        }
-        this.runningStatus = {
-          ...this.runningStatus,
-          mutex: true,
-          streamingLoop: true,
-        };
+        await this.mutex.checkForBlocking();
 
-        // Busca limites
-        this.parameters = this.getConfigParams();
+        this.mutex.blockStream();
 
         // Busca arquivos a serem enviados
         const fileNames = Storage.getFileList();
@@ -99,68 +90,44 @@ export class StreamingFlow {
         StreamingFlow.logSentFiles(fileNames);
 
         // Atualiza parametros
-        this.setConfigParams(apiResponse);
+        this.configurationParameters.setLimits(apiResponse);
 
         // Deleta arquivos enviados
         StreamingFlow.cleanFilesSent(fileNames);
       } finally {
-        this.runningStatus = {
-          ...this.runningStatus,
-          mutex: false,
-          streamingLoop: false,
-        };
-
-        if (!this.runningStatus.terminate) {
+        this.mutex.unblock();
+        if (this.mutex.isTerminated()) {
           this.streamingLoop();
         }
       }
-    }, this.runningStatus.streamingLoopIntervalMs);
+    }, this.streamingLoopIntervalMs);
   }
 
   private refreshTokenLoop(): void {
     setTimeout(async () => {
       try {
-        if (this.runningStatus.terminate) {
+        if (this.mutex.getStatus().terminate) {
           return;
         }
 
-        if (this.runningStatus.mutex) {
-          await this.delay();
-        }
+        await this.mutex.checkForBlocking();
 
-        this.runningStatus = {
-          ...this.runningStatus,
-          mutex: true,
-          refreshTokenLoop: true,
-        };
+        this.mutex.blockRefreshToken();
+
         await this.authenticationEntity.refreshTokens();
       } finally {
-        this.runningStatus = {
-          ...this.runningStatus,
-          mutex: false,
-          refreshTokenLoop: false,
-        };
-
-        if (!this.runningStatus.terminate) {
-          this.streamingLoop();
+        this.mutex.unblock();
+        if (this.mutex.isTerminated()) {
+          this.refreshTokenLoop();
         }
       }
-    }, this.runningStatus.refreshTokenLoopIntervalMs);
-  }
-
-  public async checkForBlocking() {
-    while (this.runningStatus.mutex) {
-      await this.delay();
-    }
+    }, this.refreshTokenLoopIntervalMs);
   }
 
   public async terminate() {
-    this.runningStatus.terminate = true;
-    while (
-      this.runningStatus.streamingLoop ||
-      this.runningStatus.refreshTokenLoop
-    ) {
-      await this.delay();
+    this.mutex.terminate();
+    while (this.mutex.stillRunning()) {
+      await this.mutex.checkForBlocking();
     }
   }
 
@@ -199,17 +166,5 @@ export class StreamingFlow {
 
   private static cleanFilesSent(fileNames: string[]): void {
     Storage.deleteFiles(fileNames);
-  }
-
-  public getConfigParams(): ILimitsParameters {
-    return this.configurationParameters.getLimits();
-  }
-
-  public setConfigParams(newParameters: ILimitsParameters) {
-    this.configurationParameters.setLimits(newParameters);
-  }
-
-  public isAuthenticated() {
-    return this.authenticationEntity.isAuthenticated();
   }
 }
