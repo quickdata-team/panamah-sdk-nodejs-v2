@@ -6,6 +6,7 @@ import {
   Logger,
   ApiServiceEntity,
   Mutex,
+  IAuthenticationParameters,
 } from '@entities';
 import { ILimitsParameters } from '@infra';
 
@@ -29,8 +30,6 @@ export class StreamingFlow {
 
   private apiServiceEntity = new ApiServiceEntity();
 
-  private parameters!: ILimitsParameters;
-
   constructor(
     mutex: Mutex,
     authenticationEntity: AuthenticationEntity,
@@ -41,7 +40,19 @@ export class StreamingFlow {
     this.configurationParameters = configurationParameters;
   }
 
-  public async init({ username, password }: any) {
+  /**
+   * Looping de streaming
+   * @param {IAuthenticationParameters} {
+   *     username,
+   *     password,
+   *   }
+   * @return {*}  {Promise<void>}
+   * @memberof StreamingFlow
+   */
+  public async init({
+    username,
+    password,
+  }: IAuthenticationParameters): Promise<void> {
     try {
       this.mutex.setStatus({
         terminate: false,
@@ -62,6 +73,11 @@ export class StreamingFlow {
     }
   }
 
+  /**
+   * Looping de streaming
+   * @private
+   * @memberof StreamingFlow
+   */
   private streamingLoop(): void {
     setTimeout(async () => {
       try {
@@ -73,27 +89,7 @@ export class StreamingFlow {
 
         this.mutex.blockStream();
 
-        // Busca arquivos a serem enviados
-        const fileNames = Storage.getFileList();
-
-        // Verifica limites
-        if (!this.anyLimitReached(fileNames)) {
-          // Loga arquivos enviados
-          StreamingFlow.logSentFiles([]);
-          return;
-        }
-
-        // Cria e envia o arquivo
-        const apiResponse = await this.sendJson(fileNames);
-
-        // Loga arquivos enviados
-        StreamingFlow.logSentFiles(fileNames);
-
-        // Atualiza parametros
-        this.configurationParameters.setLimits(apiResponse);
-
-        // Deleta arquivos enviados
-        StreamingFlow.cleanFilesSent(fileNames);
+        await this.sendBatch();
       } finally {
         this.mutex.unblock();
         if (this.mutex.isTerminated()) {
@@ -103,6 +99,41 @@ export class StreamingFlow {
     }, this.streamingLoopIntervalMs);
   }
 
+  /**
+   * Lógica de envio de arquivo
+   * @private
+   * @return {*}  {Promise<void>}
+   * @memberof StreamingFlow
+   */
+  private async sendBatch(): Promise<void> {
+    // Busca arquivos a serem enviados
+    const fileNames = Storage.getFileList();
+
+    // Verifica limites
+    if (!this.anyLimitReached(fileNames)) {
+      // Loga arquivos enviados
+      StreamingFlow.logSentFiles([]);
+      return;
+    }
+
+    // Cria e envia o arquivo
+    const apiResponse = await this.sendJson(fileNames);
+
+    // Loga arquivos enviados
+    StreamingFlow.logSentFiles(fileNames);
+
+    // Atualiza parametros
+    this.configurationParameters.setLimits(apiResponse);
+
+    // Deleta arquivos enviados
+    StreamingFlow.cleanFilesSent(fileNames);
+  }
+
+  /**
+   * Looping de refresh de token
+   * @private
+   * @memberof StreamingFlow
+   */
   private refreshTokenLoop(): void {
     setTimeout(async () => {
       try {
@@ -124,22 +155,42 @@ export class StreamingFlow {
     }, this.refreshTokenLoopIntervalMs);
   }
 
-  public async terminate() {
+  /**
+   * Lógica de shutdown
+   * @return {*}  {Promise<void>}
+   * @memberof StreamingFlow
+   */
+  public async terminate(): Promise<void> {
     this.mutex.terminate();
     while (this.mutex.stillRunning()) {
       await this.mutex.checkForBlocking();
     }
+    await this.sendBatch();
   }
 
-  private anyLimitReached(fileNames: string[]) {
+  /**
+   * Lógica de verificação se deve enviar o lote atual
+   * @private
+   * @param {string[]} fileNames
+   * @return {*}  {boolean}
+   * @memberof StreamingFlow
+   */
+  private anyLimitReached(fileNames: string[]): boolean {
     const folderSize = Storage.getFilesSize(fileNames);
-    if (folderSize >= this.parameters.sizeLimitInBytes) {
+    if (folderSize >= this.configurationParameters.sizeLimitInBytes) {
       return true;
     }
     return false;
   }
 
-  private async sendJson(fileNames: string[]) {
+  /**
+   * Envio de batch
+   * @private
+   * @param {string[]} fileNames
+   * @return {*}
+   * @memberof StreamingFlow
+   */
+  private async sendJson(fileNames: string[]): Promise<ILimitsParameters> {
     const postObj: toBeSent = {
       data: [],
     };
@@ -153,7 +204,15 @@ export class StreamingFlow {
     return response.newParameters;
   }
 
-  private static logSentFiles(fileNames: string[]) {
+  /**
+   * Log de arquivos enviados
+   * @private
+   * @static
+   * @param {string[]} fileNames
+   * @return {*}  {void}
+   * @memberof StreamingFlow
+   */
+  private static logSentFiles(fileNames: string[]): void {
     if (fileNames.length === 0) {
       Logger.log('No files found to be sent');
       return;
