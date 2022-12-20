@@ -4,9 +4,9 @@ import { SubscriberBadRequestError } from '@errors';
 export class Subscriber {
   id!: string;
 
-  nome?: string;
+  nome!: string;
 
-  fantasia?: string;
+  fantasia!: string;
 
   bairro?: string;
 
