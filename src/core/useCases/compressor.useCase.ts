@@ -8,9 +8,9 @@ import {
 } from '@errors';
 
 export class Compressor {
-  private mutex;
+  private mutex: Mutex;
 
-  private authenticationEntity;
+  private authenticationEntity: AuthenticationEntity;
 
   constructor(mutex: Mutex, authenticationEntity: AuthenticationEntity) {
     this.mutex = mutex;

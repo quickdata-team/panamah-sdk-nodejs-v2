@@ -14,10 +14,8 @@ export class Mutex {
     terminate: true, // Force stop flag
     mutex: false, // Se esta sendo executado uma operação bloqueante
     mutexWaitMs: 1000, // Intervalo de espera em caso de operações bloqueantes
-    // streamingLoop: false, // Flag de running do streamingloop
-    // streamingLoopIntervalMs: 1000, // Intervalo de envio do SDK para a API
+    streamingLoop: false, // Flag de running do streamingloop
     refreshTokenLoop: false, // Flag de running do refreshToken
-    // refreshTokenLoopIntervalMs: 2000, // Intervalo de refresh de tokens
   };
 
   public getStatus() {
