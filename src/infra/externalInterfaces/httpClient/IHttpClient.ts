@@ -20,10 +20,8 @@ export interface IPostSaleResponse {
 }
 
 export interface IPostSaleRequest {
-  data: {
-    id: string;
-    content: string;
-  }[];
+  id: string;
+  content: string;
 }
 
 export interface IHttpClient {

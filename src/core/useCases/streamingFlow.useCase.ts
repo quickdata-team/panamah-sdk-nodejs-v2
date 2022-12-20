@@ -11,10 +11,8 @@ import {
 import { ILimitsParameters } from '@infra';
 
 type toBeSent = {
-  data: {
-    id: string;
-    content: string;
-  }[];
+  id: string;
+  content: string;
 };
 
 export class StreamingFlow {
@@ -191,16 +189,17 @@ export class StreamingFlow {
    * @memberof StreamingFlow
    */
   private async sendJson(fileNames: string[]): Promise<ILimitsParameters> {
-    const postObj: toBeSent = {
-      data: [],
-    };
+    const postObj: toBeSent[] = [];
     for (const fileName of fileNames) {
-      postObj.data.push({
+      postObj.push({
         id: fileName,
         content: Storage.loadFile(fileName),
       });
     }
-    const response = await this.apiServiceEntity.postSale(postObj);
+    const response = await this.apiServiceEntity.postSale(
+      postObj,
+      this.authenticationEntity.getTokens().accessToken
+    );
     return response.newParameters;
   }
 
