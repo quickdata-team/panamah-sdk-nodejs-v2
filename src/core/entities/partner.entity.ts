@@ -1,5 +1,5 @@
 import { Draft07, Draft, JSONError } from 'json-schema-library';
-import { BadRequestError } from './erro';
+import { BadRequestError } from '@errors';
 
 export class Partner {
   id!: string;

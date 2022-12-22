@@ -3,7 +3,8 @@ import JSZip from 'jszip';
 
 import path from 'path';
 import https from 'https';
-import { LibStorage } from '../../adaptors/index';
+
+import { FsLib as LibStorage } from '../storageLib';
 
 export class NodeLibxml {
   private libxml = new Libxml();
@@ -34,7 +35,7 @@ export class NodeLibxml {
     await this.downloadZippedSchemas();
 
     const jszip = new JSZip();
-    const fileContent = LibStorage.readFile(`${this.schemaPath}files.zip`);
+    const fileContent = LibStorage.readFile(this.schemaPath, 'files.zip');
     const result = await jszip.loadAsync(fileContent);
     const keys = Object.keys(result.files);
 

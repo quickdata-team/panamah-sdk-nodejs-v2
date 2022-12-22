@@ -1,13 +1,9 @@
-import { HttpClient } from '../../infra/adaptors';
-import {
-  IAuthResponse,
-  IHttpClient,
-} from '../../infra/externalInterfaces/httpClient/IHttpClient';
+import { HttpClient, IHttpClient, IAuthResponse } from '@infra';
 import {
   InternalServerError,
   ForbiddenUserError,
   InvalidApiKeyHeaderError,
-} from './erro';
+} from '@errors';
 
 export class AuthenticationEntity {
   private accessToken!: string;
@@ -27,8 +23,8 @@ export class AuthenticationEntity {
       const response = await this.httpClient.auth({ username, password });
       this.setTokens(response);
     } catch (err) {
-      const { data } = err.response;
-      if (data) {
+      if (err.response && err.response.data) {
+        const { data } = err.response;
         if (data.statusCode === 4032) throw new ForbiddenUserError();
         if (data.statusCode === 4015) throw new InvalidApiKeyHeaderError();
       }
@@ -41,7 +37,7 @@ export class AuthenticationEntity {
     this.setTokens(response);
   }
 
-  public isAuthenticated() {
+  public isAuthenticated(): boolean {
     if (this.expiresIn) {
       return this.expiresIn > new Date().getTime();
     }
@@ -50,7 +46,7 @@ export class AuthenticationEntity {
 
   private setTokens(data: IAuthResponse) {
     this.accessToken = data.accessToken;
-    this.refreshToken = data.refreshToken;
+    this.refreshToken = data.refreshToken || this.refreshToken;
     this.expiresIn = new Date().getTime() + data.expiresIn * 1000;
   }
 

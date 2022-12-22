@@ -1,14 +1,21 @@
-import { Xml } from '../entities/xml.entity';
-import { Storage } from '../entities/storage.entity';
+import { Xml, Storage } from '@entities';
 import {
   BaseError,
   XMLBadRequestError,
   NFEBadRequestError,
   NFEschemasBadRequestError,
-} from '../entities/erro';
+  ForbiddenUserError,
+} from '@errors';
+import { StreamingFlow } from './streamingFlow.useCase';
 
-export class Compressor extends Storage {
+export class Compressor {
   public authetication: boolean = true;
+
+  private streamingFlow: StreamingFlow;
+
+  constructor(streamingFlow: StreamingFlow) {
+    this.streamingFlow = streamingFlow;
+  }
 
   /**
    * Armazenamento e controle dos XML
@@ -21,15 +28,18 @@ export class Compressor extends Storage {
    *     | BaseError)}
    * @memberof Compressor
    */
-  public send(
+  public async send(
     nfeContent: string,
     fromPath: boolean = true
-  ):
+  ): Promise<
     | void
     | XMLBadRequestError
     | NFEBadRequestError
     | NFEschemasBadRequestError
-    | BaseError {
+    | BaseError
+  > {
+    await this.streamingFlow.checkForBlocking();
+
     const XML = new Xml();
 
     // Carrega XML
@@ -42,20 +52,16 @@ export class Compressor extends Storage {
     // Valida XML
     XML.validate();
 
-    // Autentica usuario
-    this.authenticate();
+    // Verifica autenticação
+    if (!this.streamingFlow.isAuthenticated()) throw new ForbiddenUserError();
 
     // Cria diretorio para salvar o XML
-    this.createDir();
+    Storage.createDir();
 
     // Cria nome unico
-    const fileName = this.createFileName(XML);
+    const fileName = Storage.createFileName(XML);
 
     // Salva XML
-    this.save(fileName, XML);
-  }
-
-  private authenticate() {
-    return this.authetication;
+    Storage.save(fileName, XML);
   }
 }
