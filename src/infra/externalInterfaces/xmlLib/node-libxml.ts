@@ -1,11 +1,54 @@
 import Libxml from 'node-libxml';
+import JSZip from 'jszip';
 
 import path from 'path';
+import https from 'https';
+
+import { FsLib as LibStorage } from '../storageLib';
 
 export class NodeLibxml {
   private libxml = new Libxml();
 
-  private schemaPath = path.join(__dirname, './schemas/'); // TO-DO: Criar logica melhor
+  private schemaPath = path.join(__dirname, './schemas/');
+
+  private async downloadZippedSchemas() {
+    const file = LibStorage.writeStream(`${this.schemaPath}files.zip`);
+    return new Promise((resolve) => {
+      https.get(
+        'https://cdn-schemas-xml.panamah.io/v4.00/files.zip',
+        (response) => {
+          response.pipe(file);
+
+          file.on('finish', () => {
+            file.close();
+            return resolve(true);
+          });
+        }
+      );
+    });
+  }
+
+  async loadSchemaFiles() {
+    if (LibStorage.isFileExists(`${this.schemaPath}nfe_v4.00.xsd`)) {
+      return;
+    }
+    await this.downloadZippedSchemas();
+
+    const jszip = new JSZip();
+    const fileContent = LibStorage.readFile(this.schemaPath, 'files.zip');
+    const result = await jszip.loadAsync(fileContent);
+    const keys = Object.keys(result.files);
+
+    await Promise.all(
+      keys.map(async (key) => {
+        const item = result.files[key];
+        LibStorage.saveFile(
+          `${this.schemaPath}${item.name}`,
+          Buffer.from(await item.async('arraybuffer'))
+        );
+      })
+    );
+  }
 
   /**
    * @param {string} filePath
