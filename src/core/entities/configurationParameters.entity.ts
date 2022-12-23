@@ -13,8 +13,8 @@ export class ConfigurationParameters implements ILimitsParameters {
   timeLimitInMs: number;
 
   constructor() {
-    this.sizeLimitInBytes = 1024 * 3;
-    this.timeLimitInMs = 3 * 60000;
+    this.sizeLimitInBytes = 10000 * 5; // 50kb (media xml = 10kb)
+    this.timeLimitInMs = 3 * 60000; // 3 minutos
     this.httpClient = new HttpClient();
   }
 
