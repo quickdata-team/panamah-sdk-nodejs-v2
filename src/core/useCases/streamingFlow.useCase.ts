@@ -18,7 +18,7 @@ type toBeSent = {
 export class StreamingFlow {
   private streamingLoopIntervalMs = 1000; // Intervalo de envio do SDK para a API
 
-  private refreshTokenLoopIntervalMs = 2000; // Intervalo de refresh de tokens
+  private refreshTokenLoopIntervalMs = 1000; // Intervalo de refresh de tokens. 24h
 
   private mutex: Mutex;
 
@@ -52,6 +52,7 @@ export class StreamingFlow {
     password,
   }: IAuthenticationParameters): Promise<void> {
     try {
+      Storage.clearStorage();
       this.mutex.setStatus({
         terminate: false,
         mutex: true,
@@ -60,7 +61,6 @@ export class StreamingFlow {
         username,
         password,
       });
-
       this.streamingLoop();
       this.refreshTokenLoop();
     } catch (error) {
@@ -89,8 +89,8 @@ export class StreamingFlow {
 
         await this.sendBatch();
       } finally {
-        this.mutex.unblock();
-        if (this.mutex.isTerminated()) {
+        this.mutex.unblockStream();
+        if (this.mutex.isNotTerminated()) {
           this.streamingLoop();
         }
       }
@@ -135,7 +135,10 @@ export class StreamingFlow {
   private refreshTokenLoop(): void {
     setTimeout(async () => {
       try {
-        if (this.mutex.getStatus().terminate) {
+        if (
+          !this.mutex.isNotTerminated() ||
+          !this.authenticationEntity.shouldRefresh(this.streamingLoopIntervalMs)
+        ) {
           return;
         }
 
@@ -145,8 +148,8 @@ export class StreamingFlow {
 
         await this.authenticationEntity.refreshTokens();
       } finally {
-        this.mutex.unblock();
-        if (this.mutex.isTerminated()) {
+        this.mutex.unblockRefreshToken();
+        if (this.mutex.isNotTerminated()) {
           this.refreshTokenLoop();
         }
       }
@@ -174,10 +177,28 @@ export class StreamingFlow {
    * @memberof StreamingFlow
    */
   private anyLimitReached(fileNames: string[]): boolean {
+    // Se nao houver nada para enviar, retorna
+    if (fileNames.length === 0) {
+      return false;
+    }
+
+    // Envio forçado por parada do SDK
+    if (!this.mutex.isNotTerminated()) {
+      return true;
+    }
+
+    // Limite de tamanho atingido
     const folderSize = Storage.getFilesSize(fileNames);
     if (folderSize >= this.configurationParameters.sizeLimitInBytes) {
       return true;
     }
+
+    // Limite de tempo atingido
+    const oldestFile = new Date().getTime() - Storage.getOldestFile(fileNames);
+    if (oldestFile >= this.configurationParameters.timeLimitInMs) {
+      return true;
+    }
+
     return false;
   }
 
