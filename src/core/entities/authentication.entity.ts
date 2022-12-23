@@ -49,6 +49,14 @@ export class AuthenticationEntity {
     return false;
   }
 
+  public shouldRefresh(loopInterval: number): boolean {
+    const timeLeft = this.expiresIn - new Date().getTime() - loopInterval * 4;
+    if (timeLeft <= 0) {
+      return true;
+    }
+    return false;
+  }
+
   private setTokens(data: IAuthResponse) {
     this.accessToken = data.accessToken;
     this.refreshToken = data.refreshToken || this.refreshToken;

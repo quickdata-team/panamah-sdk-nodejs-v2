@@ -38,31 +38,36 @@ export class Compressor {
     | NFEschemasBadRequestError
     | BaseError
   > {
-    await this.mutex.checkForBlocking();
+    try {
+      await this.mutex.checkForBlocking();
+      this.mutex.blockCompress();
 
-    const XML = new Xml();
+      const XML = new Xml();
 
-    // Carrega XML
-    if (fromPath) {
-      XML.loadFromPath(nfeContent);
-    } else {
-      XML.loadFromString(nfeContent);
+      // Carrega XML
+      if (fromPath) {
+        XML.loadFromPath(nfeContent);
+      } else {
+        XML.loadFromString(nfeContent);
+      }
+
+      // Valida XML
+      XML.validate();
+
+      // Verifica autenticação
+      if (!this.authenticationEntity.isAuthenticated())
+        throw new ForbiddenUserError();
+
+      // Cria diretorio para salvar o XML
+      Storage.createDir();
+
+      // Cria nome unico
+      const fileName = Storage.createFileName(XML);
+
+      // Salva XML
+      Storage.save(fileName, XML);
+    } finally {
+      this.mutex.unblockCompress();
     }
-
-    // Valida XML
-    XML.validate();
-
-    // Verifica autenticação
-    if (!this.authenticationEntity.isAuthenticated())
-      throw new ForbiddenUserError();
-
-    // Cria diretorio para salvar o XML
-    Storage.createDir();
-
-    // Cria nome unico
-    const fileName = Storage.createFileName(XML);
-
-    // Salva XML
-    Storage.save(fileName, XML);
   }
 }

@@ -8,6 +8,7 @@ type IRunningStatus = {
   streamingLoopIntervalMs?: number; // Intervalo de envio do SDK para a API
   refreshTokenLoop?: boolean; // Flag de running do refreshToken
   refreshTokenLoopIntervalMs?: number;
+  compress?: boolean;
 };
 export class Mutex {
   private runningStatus: IRunningStatus = {
@@ -42,18 +43,17 @@ export class Mutex {
     }
   }
 
-  public unblock() {
-    this.setStatus({
-      mutex: false,
-      streamingLoop: false,
-      refreshTokenLoop: false,
-    });
-  }
-
   public blockStream() {
     this.setStatus({
       mutex: true,
       streamingLoop: true,
+    });
+  }
+
+  public unblockStream() {
+    this.setStatus({
+      mutex: false,
+      streamingLoop: false,
     });
   }
 
@@ -64,15 +64,37 @@ export class Mutex {
     });
   }
 
+  public unblockRefreshToken() {
+    this.setStatus({
+      mutex: false,
+      refreshTokenLoop: false,
+    });
+  }
+
+  public blockCompress() {
+    this.setStatus({
+      mutex: true,
+      compress: true,
+    });
+  }
+
+  public unblockCompress() {
+    this.setStatus({
+      mutex: false,
+      compress: false,
+    });
+  }
+
   public terminate() {
     this.setStatus({ terminate: true });
   }
 
   public stillRunning() {
-    return this.getStatus().streamingLoop || this.getStatus().refreshTokenLoop;
+    const status = this.getStatus();
+    return status.streamingLoop || status.refreshTokenLoop || status.compress;
   }
 
-  public isTerminated() {
+  public isNotTerminated() {
     return !this.runningStatus.terminate;
   }
 }

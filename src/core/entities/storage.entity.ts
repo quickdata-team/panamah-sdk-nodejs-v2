@@ -1,7 +1,7 @@
 import { LibNfe, LibStorage } from '@infra';
 
 export class Storage extends LibNfe {
-  private static dirNfe = `/tmp/nfe`;
+  private static dirNfe = `/tmp/panamahNfe`;
 
   /**
    * Caso não exista, cria o diretório de armazenamento das NFE's
@@ -57,5 +57,9 @@ export class Storage extends LibNfe {
   static clearStorage(): void {
     const files = LibStorage.readDirFiles(this.dirNfe);
     LibStorage.deleteFiles(this.dirNfe, files);
+  }
+
+  static getOldestFile(fileNames: string[]): number {
+    return LibStorage.getOldestFile(this.dirNfe, fileNames);
   }
 }

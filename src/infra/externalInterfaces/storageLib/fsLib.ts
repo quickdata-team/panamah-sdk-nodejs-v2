@@ -57,7 +57,11 @@ export class FsLib {
   static deleteFiles(dirPath: string, fileNames: string[]) {
     for (const fileName of fileNames) {
       const fileWithPath = `${dirPath}/${fileName}`;
-      rmSync(fileWithPath);
+      try {
+        rmSync(fileWithPath);
+      } catch (error) {
+        /* empty */
+      }
     }
   }
 
@@ -88,5 +92,18 @@ export class FsLib {
     }
 
     return logObj;
+  }
+
+  static getOldestFile(dirPath: string, fileNames: string[]): number {
+    let oldest = 0;
+    for (const fileName of fileNames) {
+      const fileWithPath = `${dirPath}/${fileName}`;
+      const stats = statSync(fileWithPath);
+      const lastModified = stats.mtimeMs;
+      if (lastModified > oldest) {
+        oldest = lastModified;
+      }
+    }
+    return oldest;
   }
 }
