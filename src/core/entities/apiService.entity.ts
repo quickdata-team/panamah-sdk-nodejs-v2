@@ -14,13 +14,14 @@ export class ApiServiceEntity {
   }
 
   public async postSale(
-    postSaleRequest: IPostSaleRequest
+    postSaleRequest: IPostSaleRequest[],
+    token: string
   ): Promise<IPostSaleResponse> {
     try {
       const { data } = await this.httpClient.post(
-        '/postData',
+        '/stream/data',
         postSaleRequest,
-        ''
+        token
       );
       return data;
     } catch (err) {

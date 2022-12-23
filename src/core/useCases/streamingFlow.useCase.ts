@@ -5,42 +5,57 @@ import {
   AuthenticationEntity,
   Logger,
   ApiServiceEntity,
+  Mutex,
+  IAuthenticationParameters,
 } from '@entities';
 import { ILimitsParameters } from '@infra';
 
 type toBeSent = {
-  data: {
-    id: string;
-    content: string;
-  }[];
+  id: string;
+  content: string;
 };
 
 export class StreamingFlow {
-  private configurationParameters = new ConfigurationParameters();
+  private streamingLoopIntervalMs = 1000; // Intervalo de envio do SDK para a API
 
-  private authenticationEntity = new AuthenticationEntity();
+  private refreshTokenLoopIntervalMs = 2000; // Intervalo de refresh de tokens
+
+  private mutex: Mutex;
+
+  private authenticationEntity: AuthenticationEntity;
+
+  private configurationParameters: ConfigurationParameters;
 
   private apiServiceEntity = new ApiServiceEntity();
 
-  private parameters!: ILimitsParameters;
+  constructor(
+    mutex: Mutex,
+    authenticationEntity: AuthenticationEntity,
+    configurationParameters: ConfigurationParameters
+  ) {
+    this.mutex = mutex;
+    this.authenticationEntity = authenticationEntity;
+    this.configurationParameters = configurationParameters;
+  }
 
-  private runningStatus = {
-    terminate: true, // Force stop flag
-    mutex: false, // Se esta sendo executado uma operação bloqueante
-    mutexWaitMs: 1000, // Intervalo de espera em caso de operações bloqueantes
-    streamingLoop: false, // Flag de running do streamingloop
-    streamingLoopIntervalMs: 1000, // Intervalo de envio do SDK para a API
-    refreshTokenLoop: false, // Flag de running do refreshToken
-    refreshTokenLoopIntervalMs: 2000, // Intervalo de refresh de tokens
-  };
-
-  public async init({ username, password }: any) {
+  /**
+   * Looping de streaming
+   * @param {IAuthenticationParameters} {
+   *     username,
+   *     password,
+   *   }
+   * @return {*}  {Promise<void>}
+   * @memberof StreamingFlow
+   */
+  public async init({
+    username,
+    password,
+  }: IAuthenticationParameters): Promise<void> {
     try {
-      this.runningStatus = {
-        ...this.runningStatus,
+      this.mutex.setStatus({
         terminate: false,
         mutex: true,
-      };
+      });
       await this.authenticationEntity.authenticate({
         username,
         password,
@@ -49,144 +64,154 @@ export class StreamingFlow {
       this.streamingLoop();
       this.refreshTokenLoop();
     } catch (error) {
-      this.runningStatus.terminate = true;
+      this.mutex.setStatus({ terminate: true });
       throw error;
     } finally {
-      this.runningStatus.mutex = false;
+      this.mutex.setStatus({ mutex: false });
     }
   }
 
-  private async delay(): Promise<void> {
-    return new Promise((r) =>
-      // eslint-disable-next-line no-promise-executor-return
-      setTimeout(r, this.runningStatus.mutexWaitMs)
-    );
-  }
-
+  /**
+   * Looping de streaming
+   * @private
+   * @memberof StreamingFlow
+   */
   private streamingLoop(): void {
     setTimeout(async () => {
       try {
-        if (this.runningStatus.terminate) {
+        if (this.mutex.getStatus().terminate) {
           return;
         }
 
-        if (this.runningStatus.mutex) {
-          await this.delay();
-        }
-        this.runningStatus = {
-          ...this.runningStatus,
-          mutex: true,
-          streamingLoop: true,
-        };
+        await this.mutex.checkForBlocking();
 
-        // Busca limites
-        this.parameters = this.getConfigParams();
+        this.mutex.blockStream();
 
-        // Busca arquivos a serem enviados
-        const fileNames = Storage.getFileList();
-
-        // Verifica limites
-        if (!this.anyLimitReached(fileNames)) {
-          // Loga arquivos enviados
-          StreamingFlow.logSentFiles([]);
-          return;
-        }
-
-        // Cria e envia o arquivo
-        const apiResponse = await this.sendJson(fileNames);
-
-        // Loga arquivos enviados
-        StreamingFlow.logSentFiles(fileNames);
-
-        // Atualiza parametros
-        this.setConfigParams(apiResponse);
-
-        // Deleta arquivos enviados
-        StreamingFlow.cleanFilesSent(fileNames);
+        await this.sendBatch();
       } finally {
-        this.runningStatus = {
-          ...this.runningStatus,
-          mutex: false,
-          streamingLoop: false,
-        };
-
-        if (!this.runningStatus.terminate) {
+        this.mutex.unblock();
+        if (this.mutex.isTerminated()) {
           this.streamingLoop();
         }
       }
-    }, this.runningStatus.streamingLoopIntervalMs);
+    }, this.streamingLoopIntervalMs);
   }
 
+  /**
+   * Lógica de envio de arquivo
+   * @private
+   * @return {*}  {Promise<void>}
+   * @memberof StreamingFlow
+   */
+  private async sendBatch(): Promise<void> {
+    // Busca arquivos a serem enviados
+    const fileNames = Storage.getFileList();
+
+    // Verifica limites
+    if (!this.anyLimitReached(fileNames)) {
+      // Loga arquivos enviados
+      StreamingFlow.logSentFiles([]);
+      return;
+    }
+
+    // Cria e envia o arquivo
+    const apiResponse = await this.sendJson(fileNames);
+
+    // Loga arquivos enviados
+    StreamingFlow.logSentFiles(fileNames);
+
+    // Atualiza parametros
+    this.configurationParameters.setLimits(apiResponse);
+
+    // Deleta arquivos enviados
+    StreamingFlow.cleanFilesSent(fileNames);
+  }
+
+  /**
+   * Looping de refresh de token
+   * @private
+   * @memberof StreamingFlow
+   */
   private refreshTokenLoop(): void {
     setTimeout(async () => {
       try {
-        if (this.runningStatus.terminate) {
+        if (this.mutex.getStatus().terminate) {
           return;
         }
 
-        if (this.runningStatus.mutex) {
-          await this.delay();
-        }
+        await this.mutex.checkForBlocking();
 
-        this.runningStatus = {
-          ...this.runningStatus,
-          mutex: true,
-          refreshTokenLoop: true,
-        };
+        this.mutex.blockRefreshToken();
+
         await this.authenticationEntity.refreshTokens();
       } finally {
-        this.runningStatus = {
-          ...this.runningStatus,
-          mutex: false,
-          refreshTokenLoop: false,
-        };
-
-        if (!this.runningStatus.terminate) {
-          this.streamingLoop();
+        this.mutex.unblock();
+        if (this.mutex.isTerminated()) {
+          this.refreshTokenLoop();
         }
       }
-    }, this.runningStatus.refreshTokenLoopIntervalMs);
+    }, this.refreshTokenLoopIntervalMs);
   }
 
-  public async checkForBlocking() {
-    while (this.runningStatus.mutex) {
-      await this.delay();
+  /**
+   * Lógica de shutdown
+   * @return {*}  {Promise<void>}
+   * @memberof StreamingFlow
+   */
+  public async terminate(): Promise<void> {
+    this.mutex.terminate();
+    while (this.mutex.stillRunning()) {
+      await this.mutex.checkForBlocking();
     }
+    await this.sendBatch();
   }
 
-  public async terminate() {
-    this.runningStatus.terminate = true;
-    while (
-      this.runningStatus.streamingLoop ||
-      this.runningStatus.refreshTokenLoop
-    ) {
-      await this.delay();
-    }
-  }
-
-  private anyLimitReached(fileNames: string[]) {
+  /**
+   * Lógica de verificação se deve enviar o lote atual
+   * @private
+   * @param {string[]} fileNames
+   * @return {*}  {boolean}
+   * @memberof StreamingFlow
+   */
+  private anyLimitReached(fileNames: string[]): boolean {
     const folderSize = Storage.getFilesSize(fileNames);
-    if (folderSize >= this.parameters.sizeLimitInBytes) {
+    if (folderSize >= this.configurationParameters.sizeLimitInBytes) {
       return true;
     }
     return false;
   }
 
-  private async sendJson(fileNames: string[]) {
-    const postObj: toBeSent = {
-      data: [],
-    };
+  /**
+   * Envio de batch
+   * @private
+   * @param {string[]} fileNames
+   * @return {*}
+   * @memberof StreamingFlow
+   */
+  private async sendJson(fileNames: string[]): Promise<ILimitsParameters> {
+    const postObj: toBeSent[] = [];
     for (const fileName of fileNames) {
-      postObj.data.push({
+      postObj.push({
         id: fileName,
         content: Storage.loadFile(fileName),
       });
     }
-    const response = await this.apiServiceEntity.postSale(postObj);
+    const response = await this.apiServiceEntity.postSale(
+      postObj,
+      this.authenticationEntity.getTokens().accessToken
+    );
     return response.newParameters;
   }
 
-  private static logSentFiles(fileNames: string[]) {
+  /**
+   * Log de arquivos enviados
+   * @private
+   * @static
+   * @param {string[]} fileNames
+   * @return {*}  {void}
+   * @memberof StreamingFlow
+   */
+  private static logSentFiles(fileNames: string[]): void {
     if (fileNames.length === 0) {
       Logger.log('No files found to be sent');
       return;
@@ -199,17 +224,5 @@ export class StreamingFlow {
 
   private static cleanFilesSent(fileNames: string[]): void {
     Storage.deleteFiles(fileNames);
-  }
-
-  public getConfigParams(): ILimitsParameters {
-    return this.configurationParameters.getLimits();
-  }
-
-  public setConfigParams(newParameters: ILimitsParameters) {
-    this.configurationParameters.setLimits(newParameters);
-  }
-
-  public isAuthenticated() {
-    return this.authenticationEntity.isAuthenticated();
   }
 }

@@ -1,4 +1,4 @@
-import { Xml, Storage } from '@entities';
+import { Xml, Storage, AuthenticationEntity, Mutex } from '@entities';
 import {
   BaseError,
   XMLBadRequestError,
@@ -6,15 +6,15 @@ import {
   NFEschemasBadRequestError,
   ForbiddenUserError,
 } from '@errors';
-import { StreamingFlow } from './streamingFlow.useCase';
 
 export class Compressor {
-  public authetication: boolean = true;
+  private mutex: Mutex;
 
-  private streamingFlow: StreamingFlow;
+  private authenticationEntity: AuthenticationEntity;
 
-  constructor(streamingFlow: StreamingFlow) {
-    this.streamingFlow = streamingFlow;
+  constructor(mutex: Mutex, authenticationEntity: AuthenticationEntity) {
+    this.mutex = mutex;
+    this.authenticationEntity = authenticationEntity;
   }
 
   /**
@@ -38,7 +38,7 @@ export class Compressor {
     | NFEschemasBadRequestError
     | BaseError
   > {
-    await this.streamingFlow.checkForBlocking();
+    await this.mutex.checkForBlocking();
 
     const XML = new Xml();
 
@@ -53,7 +53,8 @@ export class Compressor {
     XML.validate();
 
     // Verifica autenticação
-    if (!this.streamingFlow.isAuthenticated()) throw new ForbiddenUserError();
+    if (!this.authenticationEntity.isAuthenticated())
+      throw new ForbiddenUserError();
 
     // Cria diretorio para salvar o XML
     Storage.createDir();

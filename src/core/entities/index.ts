@@ -6,3 +6,4 @@ export * from './partner.entity';
 export * from './storage.entity';
 export * from './subscriber.entity';
 export * from './xml.entity';
+export * from './mutex';

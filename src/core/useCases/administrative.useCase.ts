@@ -1,14 +1,12 @@
-/* eslint-disable class-methods-use-this */
+import { HttpClient, IHttpClient } from '@infra';
+import { AuthenticationEntity, Subscriber } from '@entities';
 import {
-  HttpClient,
+  BaseError,
   SubscriberBadRequestError,
-  IHttpClient,
   InternalServerError,
   NotFoundSubscriberError,
   UnauthorizedPartnerError,
-} from '../../infra/adaptors';
-import { AuthenticationEntity, Subscriber } from '../entities';
-import { BaseError } from '../entities/erro/BaseError';
+} from '@errors';
 
 interface ICredentials {
   username: string;
@@ -16,25 +14,21 @@ interface ICredentials {
 }
 
 export class AdministrativeUseCase {
-  private accessToken!: string;
-
   private authEntity!: AuthenticationEntity;
 
   private httpClient!: IHttpClient;
 
-  constructor() {
-    this.authEntity = new AuthenticationEntity();
+  constructor(authEntity: AuthenticationEntity) {
+    this.authEntity = authEntity;
     this.httpClient = new HttpClient();
   }
 
   public async init(credentials: ICredentials): Promise<any> {
     await this.authEntity.authenticate(credentials);
-    const { accessToken } = this.authEntity.getTokens();
-    this.accessToken = accessToken;
   }
 
   private checkAuthorized() {
-    if (!this.accessToken) {
+    if (!this.authEntity.isAuthenticated()) {
       throw new UnauthorizedPartnerError();
     }
   }
@@ -43,7 +37,11 @@ export class AdministrativeUseCase {
     try {
       this.checkAuthorized();
       Subscriber.validate(data);
-      return this.httpClient.post('/admin/assinantes', data, this.accessToken);
+      return this.httpClient.post(
+        '/admin/assinantes',
+        data,
+        this.authEntity.getTokens().accessToken
+      );
     } catch (err) {
       if (err instanceof BaseError) {
         throw err;
@@ -67,7 +65,7 @@ export class AdministrativeUseCase {
       return this.httpClient.put(
         `/admin/assinantes/${id}`,
         data,
-        this.accessToken
+        this.authEntity.getTokens().accessToken
       );
     } catch (err) {
       if (err.response) {
@@ -83,7 +81,7 @@ export class AdministrativeUseCase {
     try {
       const assinante = await this.httpClient.get(
         `/admin/assinantes/${id}`,
-        this.accessToken
+        this.authEntity.getTokens().accessToken
       );
       return assinante;
     } catch (err) {
@@ -100,7 +98,7 @@ export class AdministrativeUseCase {
     try {
       return await this.httpClient.delete(
         `/admin/assinantes/${id}`,
-        this.accessToken
+        this.authEntity.getTokens().accessToken
       );
     } catch (err) {
       if (err.response) {

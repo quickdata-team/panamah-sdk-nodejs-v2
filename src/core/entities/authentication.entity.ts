@@ -5,6 +5,11 @@ import {
   InvalidApiKeyHeaderError,
 } from '@errors';
 
+export type IAuthenticationParameters = {
+  username: string;
+  password: string;
+};
+
 export class AuthenticationEntity {
   private accessToken!: string;
 
@@ -18,7 +23,7 @@ export class AuthenticationEntity {
     this.httpClient = new HttpClient();
   }
 
-  public async authenticate({ username, password }: any) {
+  public async authenticate({ username, password }: IAuthenticationParameters) {
     try {
       const response = await this.httpClient.auth({ username, password });
       this.setTokens(response);
