@@ -4,12 +4,18 @@ import JSZip from 'jszip';
 import path from 'path';
 import https from 'https';
 
+import { js2xml, xml2js } from 'xml-js';
 import { FsLib as LibStorage } from '../storageLib';
 
 export class NodeLibxml {
   private libxml = new Libxml();
 
   private schemaPath = path.join(__dirname, './schemas/');
+
+  private xmlJsOptions = {
+    compact: true,
+    ignoreComment: true,
+  };
 
   private async downloadZippedSchemas() {
     const file = LibStorage.writeStream(`${this.schemaPath}files.zip`);
@@ -86,5 +92,25 @@ export class NodeLibxml {
 
     if (typeof validate === 'string') return true;
     return validate;
+  }
+
+  /**
+   * Transforma XML em JSON
+   * @param {*} xmlFile XML
+   * @return {*}  {*} JSON
+   * @memberof NodeLibxml
+   */
+  libXml2json(xmlFile: any): any {
+    return xml2js(xmlFile, this.xmlJsOptions);
+  }
+
+  /**
+   * Transforma JSON em XML
+   * @param {*} jsonFile
+   * @return {*}  {*}
+   * @memberof NodeLibxml
+   */
+  libJson2xml(jsonFile: any): any {
+    return js2xml(jsonFile, this.xmlJsOptions);
   }
 }

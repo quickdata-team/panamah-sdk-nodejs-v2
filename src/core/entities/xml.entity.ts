@@ -70,4 +70,24 @@ export class Xml extends LibXml {
       throw new XMLBadRequestError();
     }
   }
+
+  /**
+   * Transforma XML em JSON
+   * @param {*} xmlFile XML
+   * @return {*}  {*} JSON
+   * @memberof NodeLibxml
+   */
+  xml2json(xmlFile: any): any {
+    return this.libXml2json(xmlFile);
+  }
+
+  /**
+   * Transforma JSON em XML
+   * @param {*} jsonFile JSON
+   * @return {*}  {*} XML
+   * @memberof NodeLibxml
+   */
+  json2xml(jsonFile: any): any {
+    return this.libJson2xml(jsonFile);
+  }
 }
