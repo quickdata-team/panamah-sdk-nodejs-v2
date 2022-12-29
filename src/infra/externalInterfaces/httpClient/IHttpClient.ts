@@ -13,6 +13,7 @@ export interface IAuthRequest {
 export interface ILimitsParameters {
   sizeLimitInBytes: number;
   timeLimitInMs: number;
+  envelopMaxSize: number;
 }
 
 export interface IPostSaleResponse {
@@ -20,10 +21,17 @@ export interface IPostSaleResponse {
 }
 
 export interface IPostSaleRequest {
-  id: string;
-  content: string;
+  envelop: {
+    metaData: {
+      timeStamp: string;
+      nfeCount: number;
+      subscribers: number;
+    };
+    NFES: {
+      NFE: [any];
+    };
+  };
 }
-
 export interface IHttpClient {
   get(url: string, token: string): Promise<any>;
   post(url: string, payload: any, token: string): Promise<any>;

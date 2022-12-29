@@ -7,18 +7,18 @@ import {
   ApiServiceEntity,
   Mutex,
   IAuthenticationParameters,
+  Xml,
 } from '@entities';
 import { ILimitsParameters } from '@infra';
-
-type toBeSent = {
-  id: string;
-  content: string;
-};
 
 export class StreamingFlow {
   private streamingLoopIntervalMs = 1000; // Intervalo de envio do SDK para a API
 
+  private streamingLoopId: any;
+
   private refreshTokenLoopIntervalMs = 1000; // Intervalo de refresh de tokens. 24h
+
+  private refreshTokenLoopId: any;
 
   private mutex: Mutex;
 
@@ -27,6 +27,8 @@ export class StreamingFlow {
   private configurationParameters: ConfigurationParameters;
 
   private apiServiceEntity = new ApiServiceEntity();
+
+  private xmlEntity = new Xml();
 
   constructor(
     mutex: Mutex,
@@ -51,24 +53,13 @@ export class StreamingFlow {
     username,
     password,
   }: IAuthenticationParameters): Promise<void> {
-    try {
-      Storage.clearStorage();
-      this.mutex.setStatus({
-        terminate: false,
-        mutex: true,
-      });
-      await this.authenticationEntity.authenticate({
-        username,
-        password,
-      });
-      this.streamingLoop();
-      this.refreshTokenLoop();
-    } catch (error) {
-      this.mutex.setStatus({ terminate: true });
-      throw error;
-    } finally {
-      this.mutex.setStatus({ mutex: false });
-    }
+    Storage.clearStorage();
+    await this.authenticationEntity.authenticate({
+      username,
+      password,
+    });
+    this.streamingLoop();
+    this.refreshTokenLoop();
   }
 
   /**
@@ -77,22 +68,14 @@ export class StreamingFlow {
    * @memberof StreamingFlow
    */
   private streamingLoop(): void {
-    setTimeout(async () => {
+    this.streamingLoopId = setTimeout(async () => {
       try {
-        if (this.mutex.getStatus().terminate) {
-          return;
-        }
-
         await this.mutex.checkForBlocking();
-
         this.mutex.blockStream();
-
-        await this.sendBatch();
+        await this.sendBatch(false);
       } finally {
         this.mutex.unblockStream();
-        if (this.mutex.isNotTerminated()) {
-          this.streamingLoop();
-        }
+        this.streamingLoop();
       }
     }, this.streamingLoopIntervalMs);
   }
@@ -100,15 +83,23 @@ export class StreamingFlow {
   /**
    * Lógica de envio de arquivo
    * @private
+   * @param {boolean} force Se deve forçar o envio do batch, mesmo que nao atinja um limite
    * @return {*}  {Promise<void>}
    * @memberof StreamingFlow
    */
-  private async sendBatch(): Promise<void> {
+  private async sendBatch(force: boolean): Promise<void> {
     // Busca arquivos a serem enviados
-    const fileNames = Storage.getFileList();
+    let fileNames = Storage.getFileList();
+
+    // Aplica limite de envio
+    const maxLength = this.configurationParameters.getLimits().envelopMaxSize;
+
+    if (fileNames.length > maxLength) {
+      fileNames = fileNames.slice(0, maxLength);
+    }
 
     // Verifica limites
-    if (!this.anyLimitReached(fileNames)) {
+    if (!this.anyLimitReached(fileNames, force)) {
       // Loga arquivos enviados
       StreamingFlow.logSentFiles([]);
       return;
@@ -133,25 +124,16 @@ export class StreamingFlow {
    * @memberof StreamingFlow
    */
   private refreshTokenLoop(): void {
-    setTimeout(async () => {
+    this.refreshTokenLoopId = setTimeout(async () => {
       try {
-        if (
-          !this.mutex.isNotTerminated() ||
-          !this.authenticationEntity.shouldRefresh(this.streamingLoopIntervalMs)
-        ) {
-          return;
-        }
-
         await this.mutex.checkForBlocking();
-
         this.mutex.blockRefreshToken();
-
-        await this.authenticationEntity.refreshTokens();
+        await this.authenticationEntity.refreshTokens(
+          this.streamingLoopIntervalMs
+        );
       } finally {
         this.mutex.unblockRefreshToken();
-        if (this.mutex.isNotTerminated()) {
-          this.refreshTokenLoop();
-        }
+        this.refreshTokenLoop();
       }
     }, this.refreshTokenLoopIntervalMs);
   }
@@ -162,11 +144,17 @@ export class StreamingFlow {
    * @memberof StreamingFlow
    */
   public async terminate(): Promise<void> {
-    this.mutex.terminate();
     while (this.mutex.stillRunning()) {
       await this.mutex.checkForBlocking();
     }
-    await this.sendBatch();
+
+    clearTimeout(this.refreshTokenLoopId);
+    clearTimeout(this.streamingLoopId);
+
+    // Continua enviando ate nao haver mais arquivos para enviar
+    while (Storage.getFileList().length > 0) {
+      await this.sendBatch(true);
+    }
   }
 
   /**
@@ -176,14 +164,14 @@ export class StreamingFlow {
    * @return {*}  {boolean}
    * @memberof StreamingFlow
    */
-  private anyLimitReached(fileNames: string[]): boolean {
+  private anyLimitReached(fileNames: string[], force: boolean): boolean {
     // Se nao houver nada para enviar, retorna
     if (fileNames.length === 0) {
       return false;
     }
 
     // Envio forçado por parada do SDK
-    if (!this.mutex.isNotTerminated()) {
+    if (force) {
       return true;
     }
 
@@ -210,15 +198,34 @@ export class StreamingFlow {
    * @memberof StreamingFlow
    */
   private async sendJson(fileNames: string[]): Promise<ILimitsParameters> {
-    const postObj: toBeSent[] = [];
+    // Envelope em JSON
+    const emptyArray: any = [];
+    const postObj = {
+      envelop: {
+        metaData: {
+          timeStamp: new Date().toISOString(),
+          nfeCount: 2,
+          subscribers: 3,
+        },
+        NFES: {
+          NFE: emptyArray,
+        },
+      },
+    };
+
+    // Adiciona XMLs aos envelope
     for (const fileName of fileNames) {
-      postObj.push({
-        id: fileName,
-        content: Storage.loadFile(fileName),
-      });
+      const file = Storage.loadFile(fileName);
+      // Tranforma o arquivo XML em json
+      const json: any = this.xmlEntity.xml2json(file);
+      postObj.envelop.NFES.NFE.push(json);
     }
+
+    // Tranforma o envelope em XML
+    const postXml = this.xmlEntity.json2xml(postObj);
+
     const response = await this.apiServiceEntity.postSale(
-      postObj,
+      postXml,
       this.authenticationEntity.getTokens().accessToken
     );
     return response.newParameters;
