@@ -37,7 +37,11 @@ export class AuthenticationEntity {
     }
   }
 
-  public async refreshTokens() {
+  public async refreshTokens(loopIntervalMs: number) {
+    if (!this.shouldRefresh(loopIntervalMs)) {
+      return;
+    }
+
     const response = await this.httpClient.refreshTokens(this.refreshToken);
     this.setTokens(response);
   }
@@ -49,8 +53,8 @@ export class AuthenticationEntity {
     return false;
   }
 
-  public shouldRefresh(loopInterval: number): boolean {
-    const timeLeft = this.expiresIn - new Date().getTime() - loopInterval * 4;
+  public shouldRefresh(loopIntervalMs: number): boolean {
+    const timeLeft = this.expiresIn - new Date().getTime() - loopIntervalMs * 4;
     if (timeLeft <= 0) {
       return true;
     }

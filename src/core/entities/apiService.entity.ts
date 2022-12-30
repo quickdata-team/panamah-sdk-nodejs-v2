@@ -14,7 +14,7 @@ export class ApiServiceEntity {
   }
 
   public async postSale(
-    postSaleRequest: IPostSaleRequest[],
+    postSaleRequest: IPostSaleRequest,
     token: string
   ): Promise<IPostSaleResponse> {
     try {
