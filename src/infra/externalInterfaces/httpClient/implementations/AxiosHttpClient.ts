@@ -35,6 +35,20 @@ export class AxiosHttpClient implements IHttpClient {
     return { data, status };
   }
 
+  public async postSale(
+    url: string,
+    payload: any,
+    token: string
+  ): Promise<any> {
+    const { status, data } = await this.httpClient.post(url, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/xml',
+      },
+    });
+    return { data, status };
+  }
+
   public async put(url: string, payload: any, token: string): Promise<any> {
     const { status, data } = await this.httpClient.put(url, payload, {
       headers: {

@@ -18,8 +18,8 @@ export class ApiServiceEntity {
     token: string
   ): Promise<IPostSaleResponse> {
     try {
-      const { data } = await this.httpClient.post(
-        '/stream/data',
+      const { data } = await this.httpClient.postSale(
+        '/postData',
         postSaleRequest,
         token
       );
