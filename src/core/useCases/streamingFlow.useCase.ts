@@ -204,8 +204,8 @@ export class StreamingFlow {
       envelop: {
         metaData: {
           timeStamp: new Date().toISOString(),
-          nfeCount: 2,
-          subscribers: 3,
+          nfeCount: fileNames.length,
+          subscribers: 0,
         },
         NFES: {
           NFE: emptyArray,
