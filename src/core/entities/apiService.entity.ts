@@ -19,7 +19,7 @@ export class ApiServiceEntity {
   ): Promise<IPostSaleResponse> {
     try {
       const { data } = await this.httpClient.postSale(
-        '/postData',
+        '/stream/data',
         postSaleRequest,
         token
       );
