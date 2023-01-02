@@ -33,7 +33,8 @@ export class FsLib {
   }
 
   static readDirFiles(dirPath: string): string[] {
-    return readdirSync(dirPath);
+    if (this.isDirExists(dirPath)) return readdirSync(dirPath);
+    return [];
   }
 
   static writeStream(filePath: string) {
