@@ -4,8 +4,9 @@ import path from 'path';
 import https from 'https';
 
 import { js2xml, xml2js } from 'xml-js';
-import Libxml from 'node-libxml';
 import { FsLib as LibStorage } from '../storageLib';
+
+const Libxml = require('node-libxml');
 
 export class NodeLibxml {
   private libxml = new Libxml();
