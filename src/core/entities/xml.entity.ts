@@ -92,7 +92,7 @@ export class Xml extends LibXml {
   }
 
   /**
-   * Busca CNPJ em uma objeto de NFE
+   * Busca CNPJ em um objeto NFE
    * @static
    * @param {*} json
    * @return {*}  {string}
