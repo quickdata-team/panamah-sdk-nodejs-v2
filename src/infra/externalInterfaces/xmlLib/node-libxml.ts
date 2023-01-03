@@ -1,10 +1,10 @@
-import Libxml from 'node-libxml';
 import JSZip from 'jszip';
 
 import path from 'path';
 import https from 'https';
 
 import { js2xml, xml2js } from 'xml-js';
+import Libxml from 'node-libxml';
 import { FsLib as LibStorage } from '../storageLib';
 
 export class NodeLibxml {
