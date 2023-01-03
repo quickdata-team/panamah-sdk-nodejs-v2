@@ -90,4 +90,38 @@ export class Xml extends LibXml {
   json2xml(jsonFile: any): any {
     return this.libJson2xml(jsonFile);
   }
+
+  /**
+   * Busca CNPJ em uma objeto de NFE
+   * @static
+   * @param {*} json
+   * @return {*}  {string}
+   * @memberof Xml
+   */
+  static getCnpj(json: any): string {
+    let cnpj = '0';
+    try {
+      let nfe = json;
+
+      // Verificação de tag externa
+      if (nfe.nfeProc) {
+        nfe = nfe.nfeProc;
+      }
+
+      nfe = nfe.NFe;
+      nfe = nfe.infNFe.emit;
+
+      // Conciliação CNPJ e CPF
+      if (nfe.CNPJ) {
+        // eslint-disable-next-line no-underscore-dangle
+        cnpj = nfe.CNPJ._text;
+      } else {
+        // eslint-disable-next-line no-underscore-dangle
+        cnpj = nfe.CPF._text;
+      }
+    } catch (error) {
+      /* empty */
+    }
+    return cnpj;
+  }
 }
