@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { readFileSync } from 'fs';
 import {
   XMLBadRequestError,
@@ -99,7 +100,6 @@ export class Xml extends LibXml {
    * @memberof Xml
    */
   static getCnpj(json: any): string {
-    let cnpj = '0';
     try {
       let nfe = json;
 
@@ -107,21 +107,15 @@ export class Xml extends LibXml {
       if (nfe.nfeProc) {
         nfe = nfe.nfeProc;
       }
-
-      nfe = nfe.NFe;
-      nfe = nfe.infNFe.emit;
+      const { emit } = nfe.NFe.infNFe;
 
       // Conciliação CNPJ e CPF
-      if (nfe.CNPJ) {
-        // eslint-disable-next-line no-underscore-dangle
-        cnpj = nfe.CNPJ._text;
-      } else {
-        // eslint-disable-next-line no-underscore-dangle
-        cnpj = nfe.CPF._text;
+      if (emit.CNPJ) {
+        return emit.CNPJ._text;
       }
+      return emit.CPF._text;
     } catch (error) {
-      /* empty */
+      return '0';
     }
-    return cnpj;
   }
 }
