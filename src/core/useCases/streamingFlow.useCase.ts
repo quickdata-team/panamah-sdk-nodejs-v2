@@ -200,12 +200,16 @@ export class StreamingFlow {
   private async sendJson(fileNames: string[]): Promise<ILimitsParameters> {
     // Envelope em JSON
     const emptyArray: any = [];
-    const postObj = {
+    const subscribersArray: any = [];
+    const postObj: any = {
       envelop: {
         metaData: {
           timeStamp: new Date().toISOString(),
           nfeCount: fileNames.length,
-          subscribers: 0,
+          subscribers: {
+            subscriber: [],
+          },
+          subscribersCount: 0,
         },
         NFES: {
           NFE: emptyArray,
@@ -213,12 +217,29 @@ export class StreamingFlow {
       },
     };
 
-    // Adiciona XMLs aos envelope
+    // Adiciona XMLs ao envelope
     for (const fileName of fileNames) {
+      // Busca XML
       const file = Storage.loadFile(fileName);
       // Tranforma o arquivo XML em json
       const json: any = this.xmlEntity.xml2json(file);
+
+      // Busca e salva CNPJ
+      const newSubcriber = Xml.getCnpj(json);
+      if (!subscribersArray.includes(newSubcriber)) {
+        subscribersArray.push(newSubcriber);
+      }
+
+      // Adiciona xml
       postObj.envelop.NFES.NFE.push(json);
+    }
+
+    // add meta dados:
+    // Quantidade de assinantes distintos
+    postObj.envelop.metaData.subscribersCount = subscribersArray.length;
+    // Assinantes
+    for (const newSubscriber of subscribersArray) {
+      postObj.envelop.metaData.subscribers.subscriber.push(newSubscriber);
     }
 
     // Tranforma o envelope em XML

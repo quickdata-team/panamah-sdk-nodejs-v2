@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { readFileSync } from 'fs';
 import {
   XMLBadRequestError,
@@ -89,5 +90,32 @@ export class Xml extends LibXml {
    */
   json2xml(jsonFile: any): any {
     return this.libJson2xml(jsonFile);
+  }
+
+  /**
+   * Busca CNPJ em um objeto NFE
+   * @static
+   * @param {*} json
+   * @return {*}  {string}
+   * @memberof Xml
+   */
+  static getCnpj(json: any): string {
+    try {
+      let nfe = json;
+
+      // Verificação de tag externa
+      if (nfe.nfeProc) {
+        nfe = nfe.nfeProc;
+      }
+      const { emit } = nfe.NFe.infNFe;
+
+      // Conciliação CNPJ e CPF
+      if (emit.CNPJ) {
+        return emit.CNPJ._text;
+      }
+      return emit.CPF._text;
+    } catch (error) {
+      return '0';
+    }
   }
 }
