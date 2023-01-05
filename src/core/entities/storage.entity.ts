@@ -1,7 +1,9 @@
 import { LibNfe, LibStorage } from '@infra';
+import { resolve } from 'path';
 
 export class Storage extends LibNfe {
-  private static dirNfe = `/tmp/panamahNfe`;
+  static dirNfe = resolve('/', 'tmp', 'panamahNfe', 'accumulated');
+  static sentDirNfe = resolve('/', 'tmp', 'panamahNfe', 'sent');
 
   /**
    * Caso não exista, cria o diretório de armazenamento das NFE's
@@ -10,6 +12,10 @@ export class Storage extends LibNfe {
   static createDir(): void {
     if (!LibStorage.isDirExists(this.dirNfe)) {
       LibStorage.createDir(this.dirNfe);
+    }
+
+    if (!LibStorage.isDirExists(this.sentDirNfe)) {
+      LibStorage.createDir(this.sentDirNfe);
     }
   }
 
@@ -46,11 +52,23 @@ export class Storage extends LibNfe {
     return LibStorage.getDirSize(this.dirNfe, fileNames);
   }
 
+  /**
+   * Gera uma lista com o nome dos arquivos enviados
+   * @returns {*} {string[]}
+   */
+  static getListSentFiles(): string[] {
+    return LibStorage.readDirFiles(this.sentDirNfe);
+  }
+
   static loadFile(fileName: string): string {
     return LibStorage.readFile(this.dirNfe, fileName);
   }
 
-  static deleteFiles(fileNames: string[]) {
+  static deleteFiles(fileNames: string[]): void {
+    // Mover arquivos para a pasta de enviados
+    LibStorage.moveFiles(this.dirNfe, this.sentDirNfe, fileNames);
+
+    // Deletar arquivos acumulados
     LibStorage.deleteFiles(this.dirNfe, fileNames);
   }
 
