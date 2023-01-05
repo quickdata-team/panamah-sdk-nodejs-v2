@@ -5,7 +5,7 @@ import { IAuthRequest, IAuthResponse, IHttpClient } from '../IHttpClient';
 export class AxiosHttpClient implements IHttpClient {
   private httpClient: AxiosInstance;
 
-  private defaultUrl = process.env.BASE_URL || 'http://localhost:3000';
+  private defaultUrl = process.env.PANAMAH_CORE_URL || 'http://localhost:3000';
 
   constructor(baseUrl?: string) {
     this.httpClient = axios.create({
