@@ -53,7 +53,6 @@ export class StreamingFlow {
     username,
     password,
   }: IAuthenticationParameters): Promise<void> {
-    Storage.clearStorage();
     await this.authenticationEntity.authenticate({
       username,
       password,
