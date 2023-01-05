@@ -25,7 +25,7 @@ export class FsLib {
   }
 
   static createDir(dirPath: string): void {
-    mkdirSync(dirPath);
+    mkdirSync(dirPath, { recursive: true });
   }
 
   static saveFile(filePath: string, fileContent: string | Buffer): void {
