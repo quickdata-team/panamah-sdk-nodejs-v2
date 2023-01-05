@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/quickdata-team/panamah-sdk-nodejs-v2/compare/v1.1.0...v1.2.0) (2023-01-05)
+
+
+### Features
+
+* **pan-721:** atualiza .env a fim de evitar conflitos ([6db042d](https://github.com/quickdata-team/panamah-sdk-nodejs-v2/commit/6db042d9c8dff62efe694d743823de5e6b49b7d6))
+
+
+### Documentation
+
+* **pan-721:** atualiza README ([35fab48](https://github.com/quickdata-team/panamah-sdk-nodejs-v2/commit/35fab48f0dc5cab71e2423c2713c278cfc78662a))
+
 ## [1.1.0](https://github.com/quickdata-team/panamah-sdk-nodejs-v2/compare/v1.0.0...v1.1.0) (2023-01-04)
 
 
