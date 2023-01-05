@@ -11,6 +11,19 @@ import {
 } from '@entities';
 import { ILimitsParameters } from '@infra';
 
+interface IStreamingFlowMetadata {
+  'Arquivos Enviados': {
+    diretorio: string,
+    arquivos: string[],
+    quantidade: number,
+  },
+  'Arquivos em processamento': {
+    diretorio: string,
+    arquivos: string[],
+    quantidade: number,
+  },
+}
+
 export class StreamingFlow {
   private streamingLoopIntervalMs = 1000; // Intervalo de envio do SDK para a API
 
@@ -113,8 +126,8 @@ export class StreamingFlow {
     // Atualiza parametros
     this.configurationParameters.setLimits(apiResponse);
 
-    // Deleta arquivos enviados
-    StreamingFlow.cleanFilesSent(fileNames);
+    // Deleta arquivos acumulados e salva os arquivos enviados
+    StreamingFlow.cleanAccumulatedFiles(fileNames);
   }
 
   /**
@@ -270,7 +283,28 @@ export class StreamingFlow {
     }
   }
 
-  private static cleanFilesSent(fileNames: string[]): void {
+  private static cleanAccumulatedFiles(fileNames: string[]): void {
     Storage.deleteFiles(fileNames);
+  }
+
+  public static metadata(): IStreamingFlowMetadata {
+    // Arquivos enviados
+    const sentFiles = Storage.getListSentFiles();
+
+    // Arquivos em processamento
+    const accumulatedFiles = Storage.getFileList();
+
+    return {
+      'Arquivos Enviados': {
+        diretorio: Storage.sentDirNfe,
+        arquivos: sentFiles,
+        quantidade: sentFiles.length
+      },
+      'Arquivos em processamento': {
+        diretorio: Storage.dirNfe,
+        arquivos: accumulatedFiles,
+        quantidade: accumulatedFiles.length
+      }
+    }
   }
 }
