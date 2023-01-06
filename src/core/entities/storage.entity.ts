@@ -3,6 +3,7 @@ import { resolve } from 'path';
 
 export class Storage extends LibNfe {
   static dirNfe = resolve('/', 'tmp', 'panamahNfe', 'accumulated');
+
   static sentDirNfe = resolve('/', 'tmp', 'panamahNfe', 'sent');
 
   /**
