@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/quickdata-team/panamah-sdk-nodejs-v2/compare/v1.2.0...v1.3.0) (2023-01-06)
+
+
+### Features
+
+* **PAN-720:** adicionar método para expor metadados do fluxo de envio de NFE's ([a834a71](https://github.com/quickdata-team/panamah-sdk-nodejs-v2/commit/a834a7116898626d476e339752ac9a8f76dbaf27))
+* **PAN-720:** adicionar método para mover arquivos entre diretórios ([bd14f39](https://github.com/quickdata-team/panamah-sdk-nodejs-v2/commit/bd14f393948650ed083dfd2ec32899e147276130))
+* **PAN-720:** expor método com os metadados do fluxo de envio de NFE's ([9736ccc](https://github.com/quickdata-team/panamah-sdk-nodejs-v2/commit/9736ccc356aebb7918c15102e0850220d2674df4))
+
+
+### Refactoring
+
+* **PAN-720:** adicionar métodos para lidar com persistência arquivos enviados ([82d5e3b](https://github.com/quickdata-team/panamah-sdk-nodejs-v2/commit/82d5e3b8f3401890a76afe43afa9158c8e6fd543))
+* **PAN-720:** adicionar parâmetro para criação de diretórios aninhados ([8d83025](https://github.com/quickdata-team/panamah-sdk-nodejs-v2/commit/8d8302527d0c91fc601e06df7a3eebef99e39767))
+* **PAN-720:** remover limpeza do storage ao iniciar o SDK ([0d2c1a5](https://github.com/quickdata-team/panamah-sdk-nodejs-v2/commit/0d2c1a578c66f7b6df8a6a104063a5751042f2e6))
+* **PAN-720:** traduzir propriedades dos metadados ([7cfea3b](https://github.com/quickdata-team/panamah-sdk-nodejs-v2/commit/7cfea3b77b6a8843bdf5b0d7fc63320e26f4f17a))
+* renomear métodos de verificação de arquivos enviados e em processamento ([f853724](https://github.com/quickdata-team/panamah-sdk-nodejs-v2/commit/f853724f42832889f5fab2f96ec764a3556fa14f))
+
 ## [1.2.0](https://github.com/quickdata-team/panamah-sdk-nodejs-v2/compare/v1.1.0...v1.2.0) (2023-01-05)
 
 
