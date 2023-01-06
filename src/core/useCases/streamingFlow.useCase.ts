@@ -12,15 +12,15 @@ import {
 import { ILimitsParameters } from '@infra';
 
 interface IStreamingFlowMetadata {
-  'Arquivos Enviados': {
-    diretorio: string,
-    arquivos: string[],
-    quantidade: number,
+  sentFiles: {
+    dir: string,
+    files: string[],
+    count: number,
   },
-  'Arquivos em processamento': {
-    diretorio: string,
-    arquivos: string[],
-    quantidade: number,
+  filesInProcess: {
+    dir: string,
+    files: string[],
+    count: number,
   },
 }
 
@@ -295,15 +295,15 @@ export class StreamingFlow {
     const accumulatedFiles = Storage.getFileList();
 
     return {
-      'Arquivos Enviados': {
-        diretorio: Storage.sentDirNfe,
-        arquivos: sentFiles,
-        quantidade: sentFiles.length
+      sentFiles: {
+        dir: Storage.sentDirNfe,
+        files: sentFiles,
+        count: sentFiles.length
       },
-      'Arquivos em processamento': {
-        diretorio: Storage.dirNfe,
-        arquivos: accumulatedFiles,
-        quantidade: accumulatedFiles.length
+      filesInProcess: {
+        dir: Storage.dirNfe,
+        files: accumulatedFiles,
+        count: accumulatedFiles.length
       }
     }
   }
