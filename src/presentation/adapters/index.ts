@@ -53,9 +53,10 @@ export async function stop(): Promise<void> {
  * @export
  * @returns {*} {string}
  */
-export function metadata(): string {
-  const streamingFlowMetadata = StreamingFlow.metadata();
-  return JSON.stringify(streamingFlowMetadata);
+export function statusProcessedFiles(): string {
+  const streamingFlowStatusProcessedFiles =
+    StreamingFlow.statusProcessedFiles();
+  return JSON.stringify(streamingFlowStatusProcessedFiles);
 }
 
 const compressor = new Compressor(mutex, authenticationEntity);

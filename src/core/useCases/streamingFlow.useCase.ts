@@ -11,17 +11,17 @@ import {
 } from '@entities';
 import { ILimitsParameters } from '@infra';
 
-interface IStreamingFlowMetadata {
+interface IStatusProcessedFiles {
   sentFiles: {
-    dir: string,
-    files: string[],
-    count: number,
-  },
+    dir: string;
+    files: string[];
+    count: number;
+  };
   filesInProcess: {
-    dir: string,
-    files: string[],
-    count: number,
-  },
+    dir: string;
+    files: string[];
+    count: number;
+  };
 }
 
 export class StreamingFlow {
@@ -287,7 +287,7 @@ export class StreamingFlow {
     Storage.deleteFiles(fileNames);
   }
 
-  public static metadata(): IStreamingFlowMetadata {
+  public static statusProcessedFiles(): IStatusProcessedFiles {
     // Arquivos enviados
     const sentFiles = Storage.getListSentFiles();
 
@@ -298,13 +298,13 @@ export class StreamingFlow {
       sentFiles: {
         dir: Storage.sentDirNfe,
         files: sentFiles,
-        count: sentFiles.length
+        count: sentFiles.length,
       },
       filesInProcess: {
         dir: Storage.dirNfe,
         files: accumulatedFiles,
-        count: accumulatedFiles.length
-      }
-    }
+        count: accumulatedFiles.length,
+      },
+    };
   }
 }
