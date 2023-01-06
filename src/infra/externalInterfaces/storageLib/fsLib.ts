@@ -7,7 +7,9 @@ import {
   statSync,
   readFileSync,
   rmSync,
+  copyFileSync,
 } from 'fs';
+import { resolve } from 'path';
 
 export type LogObj = {
   date: string;
@@ -25,7 +27,7 @@ export class FsLib {
   }
 
   static createDir(dirPath: string): void {
-    mkdirSync(dirPath);
+    mkdirSync(dirPath, { recursive: true });
   }
 
   static saveFile(filePath: string, fileContent: string | Buffer): void {
@@ -53,6 +55,18 @@ export class FsLib {
 
   static readFile(dirPath: string, fileName: string): string {
     return readFileSync(`${dirPath}/${fileName}`, 'utf-8');
+  }
+
+  static moveFiles(sourceDir: string, targetDir: string, fileNames: string[]) {
+    for (const fileName of fileNames) {
+      const sourcePath = resolve(sourceDir, fileName);
+      const targetPath = resolve(targetDir, fileName);
+      try {
+        copyFileSync(sourcePath, targetPath);
+      } catch (error) {
+        /* empty */
+      }
+    }
   }
 
   static deleteFiles(dirPath: string, fileNames: string[]) {

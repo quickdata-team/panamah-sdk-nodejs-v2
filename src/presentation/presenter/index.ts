@@ -2,6 +2,7 @@ export {
   init as PanamahInit,
   send as PanamahSend,
   stop as PanamahTerminate,
+  statusProcessedFiles as PanamahStatusProcessedFiles,
   validateXml as PanamahValidateXML,
   createSubscriber as PanamahCreateSubscriber,
   getSubscriber as PanamahGetSubscriber,
