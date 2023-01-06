@@ -11,6 +11,19 @@ import {
 } from '@entities';
 import { ILimitsParameters } from '@infra';
 
+interface IStatusProcessedFiles {
+  sentFiles: {
+    dir: string;
+    files: string[];
+    count: number;
+  };
+  filesInProcess: {
+    dir: string;
+    files: string[];
+    count: number;
+  };
+}
+
 export class StreamingFlow {
   private streamingLoopIntervalMs = 1000; // Intervalo de envio do SDK para a API
 
@@ -53,7 +66,6 @@ export class StreamingFlow {
     username,
     password,
   }: IAuthenticationParameters): Promise<void> {
-    Storage.clearStorage();
     await this.authenticationEntity.authenticate({
       username,
       password,
@@ -114,8 +126,8 @@ export class StreamingFlow {
     // Atualiza parametros
     this.configurationParameters.setLimits(apiResponse);
 
-    // Deleta arquivos enviados
-    StreamingFlow.cleanFilesSent(fileNames);
+    // Deleta arquivos acumulados e salva os arquivos enviados
+    StreamingFlow.cleanAccumulatedFiles(fileNames);
   }
 
   /**
@@ -271,7 +283,28 @@ export class StreamingFlow {
     }
   }
 
-  private static cleanFilesSent(fileNames: string[]): void {
+  private static cleanAccumulatedFiles(fileNames: string[]): void {
     Storage.deleteFiles(fileNames);
+  }
+
+  public static statusProcessedFiles(): IStatusProcessedFiles {
+    // Arquivos enviados
+    const sentFiles = Storage.getListSentFiles();
+
+    // Arquivos em processamento
+    const accumulatedFiles = Storage.getFileList();
+
+    return {
+      sentFiles: {
+        dir: Storage.sentDirNfe,
+        files: sentFiles,
+        count: sentFiles.length,
+      },
+      filesInProcess: {
+        dir: Storage.dirNfe,
+        files: accumulatedFiles,
+        count: accumulatedFiles.length,
+      },
+    };
   }
 }

@@ -48,6 +48,17 @@ export async function stop(): Promise<void> {
   return streamingFlow.terminate();
 }
 
+/**
+ * Retorna para o usuário metadados relacionados ao fluxo de envio
+ * @export
+ * @returns {*} {string}
+ */
+export function statusProcessedFiles(): string {
+  const streamingFlowStatusProcessedFiles =
+    StreamingFlow.statusProcessedFiles();
+  return JSON.stringify(streamingFlowStatusProcessedFiles);
+}
+
 const compressor = new Compressor(mutex, authenticationEntity);
 /**
  * Método para salvar e enviar um XML de NFE
