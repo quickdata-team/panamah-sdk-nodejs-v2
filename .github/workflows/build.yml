@@ -41,14 +41,12 @@ jobs:
 
     steps:
       - name: Execute BDD tests with cucumber
-        uses: wei/curl@v1
-        with:
-          args: |
-            --request POST \
-            --url https://api.github.com/repos/quickdata-team/panamah-sdk-cucumber-v2/dispatches \
-            --header 'Accept: application/vnd.github.everest-preview+json' \
-            --header 'Authorization: Bearer ${{ secrets.ACCESS_TOKEN }}' \
-            --header 'Content-Type: application/json' \
-            --data '{"event_type": "nodejs-sdk-tests"}'
+        run: |
+          curl --request POST \
+          --url https://api.github.com/repos/quickdata-team/panamah-sdk-cucumber-v2/dispatches \
+          --header 'Accept: application/vnd.github.everest-preview+json' \
+          --header 'Authorization: Bearer ${{ secrets.ACCESS_TOKEN }}' \
+          --header 'Content-Type: application/json' \
+          --data '{"event_type": "nodejs-sdk-tests"}'
 
 
