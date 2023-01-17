@@ -236,6 +236,9 @@ export class StreamingFlow {
       // Tranforma o arquivo XML em json
       const json: any = this.xmlEntity.xml2json(file);
 
+      // eslint-disable-next-line no-underscore-dangle
+      delete json._declaration;
+
       // Busca e salva CNPJ
       const newSubcriber = Xml.getCnpj(json);
       if (!subscribersArray.includes(newSubcriber)) {
