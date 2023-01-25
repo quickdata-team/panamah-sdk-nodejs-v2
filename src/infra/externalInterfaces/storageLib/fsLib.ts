@@ -46,7 +46,7 @@ export class FsLib {
   static getDirSize(dirPath: string, fileNames: string[]): number {
     let folderSize = 0;
     for (const fileName of fileNames) {
-      const fileWithPath = resolve(dirPath, '/', fileName);
+      const fileWithPath = resolve(dirPath, fileName);
       const stats = statSync(fileWithPath);
       folderSize += stats.size;
     }
@@ -54,7 +54,7 @@ export class FsLib {
   }
 
   static readFile(dirPath: string, fileName: string): string {
-    const fileWithPath = resolve(dirPath, '/', fileName);
+    const fileWithPath = resolve(dirPath, fileName);
     return readFileSync(fileWithPath, 'utf-8');
   }
 
@@ -72,7 +72,7 @@ export class FsLib {
 
   static deleteFiles(dirPath: string, fileNames: string[]) {
     for (const fileName of fileNames) {
-      const fileWithPath = resolve(dirPath, '/', fileName);
+      const fileWithPath = resolve(dirPath, fileName);
       if (existsSync(fileWithPath)) {
         rmSync(fileWithPath);
       }
@@ -111,7 +111,7 @@ export class FsLib {
   static getOldestFile(dirPath: string, fileNames: string[]): number {
     let oldest = 0;
     for (const fileName of fileNames) {
-      const fileWithPath = resolve(dirPath, '/', fileName);
+      const fileWithPath = resolve(dirPath, fileName);
       const stats = statSync(fileWithPath);
       const lastModified = stats.mtimeMs;
       if (lastModified > oldest) {
