@@ -210,12 +210,15 @@ export class StreamingFlow {
    * @memberof StreamingFlow
    */
   private async sendJson(fileNames: string[]): Promise<ILimitsParameters> {
+    const softwareId = process.env.SOFTWARE_ID || '';
+
     // Envelope em JSON
     const emptyArray: any = [];
     const subscribersArray: any = [];
     const postObj: any = {
       envelop: {
         metaData: {
+          softwareId,
           timeStamp: new Date().toISOString(),
           nfeCount: fileNames.length,
           subscribers: {
